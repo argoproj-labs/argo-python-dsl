@@ -1,19 +1,26 @@
-from functools import wraps
 from functools import partial
+from functools import wraps
 
 from typing import Any
 from typing import Dict
 from typing import Callable
-from typing import Generic
 from typing import List
 from typing import Optional
-from typing import TypeVar
+from typing import Tuple
+from typing import Union
 
-from argo.workflows.client.models import *
+from argo.workflows.client.models import (
+    V1alpha1Arguments,
+    V1alpha1Artifact,
+    V1alpha1ContinueOn,
+    V1alpha1DAGTask,
+    V1alpha1Parameter,
+    V1alpha1Sequence,
+    V1alpha1Template,
+    V1alpha1TemplateRef
+)
 
 from ._base import Prop
-
-T = TypeVar("T")
 
 
 class task():
@@ -22,44 +29,66 @@ class task():
 
     def __new__(
         cls,
-        f: Callable = None,
-        arguments: V1alpha1Arguments = None,
+        f: Callable[..., V1alpha1DAGTask] = None,
+        *,
+        artifacts: List[V1alpha1Artifact] = None,
         continue_on: V1alpha1ContinueOn = None,
         dependencies: List[str] = None,
         name: str = None,
-        template: str = None,
-        template_ref: V1alpha1TemplateRef = None,
+        parameters: List[V1alpha1Parameter] = None,
         when: str = None,
         with_items: List[str] = None,
         with_param: str = None,
-        with_sequence: V1alpha1Sequence = None
+        with_sequence: V1alpha1Sequence = None,
     ):
         """"""
-        # The name of the task will be taken from the function name
+        # name of the task will be taken from the function name
         # ( if not provided )
         self = type("Task", (), {"__model__": cls.__model__})
         self.name = name
 
-        self.arguments = arguments
         self.continue_on = continue_on
         self.dependencies = dependencies
-        self.template = template
-        self.template_ref = template_ref
+        self.name = name
         self.when = when
         self.with_items = with_items
         self.with_param = with_param
         self.with_sequence = with_sequence
 
         if f is not None:
-            return cls.__call__(self, f)
+            instance = cls.__call__(self, f)
+        else:
+            instance = partial(
+                cls, **{k: v for k, v in self.__dict__.items() if not k.startswith("_")})
 
-        return partial(cls, **{k: v for k, v in self.__dict__.items() if not k.startswith("_")})
+        # additional model properties
 
-    def __call__(self, f: Callable[..., V1alpha1DAGTask]) -> V1alpha1DAGTask:
+        self.arguments: V1alpha1Arguments = V1alpha1Arguments(
+            dict(
+                artifacts=artifacts,
+                parameters=parameters
+            )
+        )
+
+        # template is the name of the template returned by the wrapped function
+        # (if applicable)
+        self.template: str = None
+        # template_ref is the template_ref returned by the function
+        # (if applicable)
+        self.template_ref: V1alpha1TemplateRef = None
+
+        return instance
+
+    def __call__(
+        self,
+        f: Callable[..., Union[V1alpha1Template, V1alpha1TemplateRef]]
+    ) -> V1alpha1DAGTask:
 
         @wraps(f)
-        def _wrap_task(*args, **kwargs) -> T:
-            template: V1alpha1Template = f()
+        def _wrap_task(*args, **kwargs) -> Tuple[V1alpha1DAGTask, Union[V1alpha1Template, None]]:
+            template_or_template_ref: Union[V1alpha1Template, V1alpha1TemplateRef] = f(
+                *args, **kwargs
+            )
 
             # __props__ is set by other relevant task decorators
             for prop in getattr(f, "__props__", {}):
@@ -70,14 +99,18 @@ class task():
 
                 setattr(self, prop, f.__props__[prop])
 
-            self.name: str = self.name or f.__code__.co_name
-            self.template = template.name
+            if isinstance(template_or_template_ref, V1alpha1TemplateRef):
+                self.template_ref = template_or_template_ref
+            else:
+                self.template = template_or_template_ref.name
 
-            task_spec = {
+            self.name: str = self.name or f.__code__.co_name
+
+            spec = {
                 prop: getattr(self, f"{prop}") for prop in self.__model__.attribute_map
             }
 
-            return task.__model__(**task_spec), template
+            return task.__model__(**spec), template_or_template_ref
 
         return _wrap_task
 
@@ -90,3 +123,23 @@ class dependencies(Prop):
 class continue_on(Prop):
 
     __model__ = V1alpha1ContinueOn
+
+
+class when(Prop):
+
+    __model__ = str
+
+
+class with_items(Prop):
+
+    __model__ = List[str]
+
+
+class with_param(Prop):
+
+    __model__ = str
+
+
+class with_sequence(Prop):
+
+    __model__ = V1alpha1Sequence
