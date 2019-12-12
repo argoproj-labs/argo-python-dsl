@@ -25,6 +25,8 @@ from argo.workflows.client.models import V1alpha1WorkflowSpec
 from argo.workflows.client.models import V1alpha1WorkflowStatus
 from argo.workflows.client.models import V1ObjectMeta
 
+from . import _utils
+
 __all__ = ["Workflow"]
 
 
@@ -37,26 +39,31 @@ class WorkflowMeta(type):
         name: Union[str, Type["Workflow"]],
         bases: Tuple[Type["Workflow"], ...],
         props: Dict[str, Any],
-        **kwargs
+        **kwargs,
     ):
         workflow_name = dasherize(underscore(name))
 
         props["kind"] = "Workflow"
         props["api_version"] = "argoproj.io/v1alpha1"
 
-        metadata_dict = dict(
-            name=workflow_name,
-            generate_name=f"{workflow_name}-"
-        )
+        metadata_dict = dict(name=workflow_name,
+                             generate_name=f"{workflow_name}-")
         metadata_dict.update(props.get("__metadata__", {}))
 
         props["metadata"]: V1ObjectMeta = V1ObjectMeta(**metadata_dict)
 
         templates: List[V1alpha1Template] = []
         for key, prop in props.items():
-            model = getattr(prop, "__model__", None)
-            if model and isinstance(model, V1alpha1Template):
-                templates.append(prop)
+            try:
+                model = getattr(prop, "__model__", None)
+
+                if model is not None and issubclass(model, V1alpha1Template):
+                    template, objs = prop.__call__()
+                    if template is not None:
+                        templates.append(template)
+
+            except AttributeError:
+                pass
 
         spec_dict = {}
         spec_dict["entrypoint"] = props.get("entrypoint", "")
@@ -96,30 +103,9 @@ class Workflow(metaclass=WorkflowMeta):
 
         :param omitempty: bool, whether to omit empty values
         """
-        result = {}
+        result = V1alpha1Workflow.to_dict(self)
 
         if omitempty:
-            def pick(d): return {k: v for k, v in d.items() if v is not None}
-        else:
-            def pick(d): return d
-
-        for attr, _ in six.iteritems(self.swagger_types):
-            value = getattr(self, attr)
-            if isinstance(value, list):
-                result[attr] = list(map(
-                    lambda x: pick(x.to_dict()) if hasattr(
-                        x, "to_dict") else x,
-                    value
-                ))
-            elif hasattr(value, "to_dict"):
-                result[attr] = pick(value.to_dict())
-            elif isinstance(value, dict):
-                result[attr] = dict(map(
-                    lambda item: (item[0], pick(item[1].to_dict()))
-                    if hasattr(item[1], "to_dict") else item,
-                    value.items()
-                ))
-            else:
-                result[attr] = value
+            return _utils.omitempty(result)
 
         return result

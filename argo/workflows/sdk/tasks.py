@@ -7,6 +7,7 @@ from typing import Callable
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Type
 from typing import Union
 
 from argo.workflows.client.models import (
@@ -28,6 +29,7 @@ from ._arguments import (
 
 
 __all__ = [
+    # decorators
     "artifact",
     "continue_on",
     "dependencies",
@@ -37,7 +39,14 @@ __all__ = [
     "with_items",
     "with_param",
     "with_sequence",
+
+    # models
+    "V1alpha1Template",
+    "V1alpha1TemplateRef"
 ]
+
+# return type
+T = Union[V1alpha1Template, V1alpha1TemplateRef]
 
 
 class task():
@@ -46,7 +55,7 @@ class task():
 
     def __new__(
         cls,
-        f: Callable[..., V1alpha1DAGTask] = None,
+        f: Callable[..., T] = None,
         *,
         artifacts: List[V1alpha1Artifact] = None,
         continue_on: V1alpha1ContinueOn = None,
@@ -62,7 +71,6 @@ class task():
         # name of the task will be taken from the function name
         # ( if not provided )
         self = type("Task", (), {"__model__": cls.__model__})
-        self.name = name
 
         self.continue_on = continue_on
         self.dependencies = dependencies
@@ -98,26 +106,28 @@ class task():
 
     def __call__(
         self,
-        f: Callable[..., Union[V1alpha1Template, V1alpha1TemplateRef]]
-    ) -> V1alpha1DAGTask:
+        f: Callable[..., T]
+    ) -> Tuple[V1alpha1DAGTask, Union[T, None]]:
+
+        f.__model__ = self.__model__
+
+        # __props__ is set by other relevant task decorators
+        for prop in getattr(f, "__props__", {}):
+            if prop not in self.__model__.attribute_map:
+                raise ValueError(
+                    f"Unknown property '{prop}' of '{self.__model__}"
+                )
+
+            setattr(self, prop, f.__props__[prop])
 
         @wraps(f)
         def _wrap_task(
             *args,
             **kwargs
         ) -> Tuple[V1alpha1DAGTask, Union[V1alpha1Template, None]]:
-            template_or_template_ref: Union[V1alpha1Template, V1alpha1TemplateRef] = f(
+            template_or_template_ref: T = f(
                 *args, **kwargs
             )
-
-            # __props__ is set by other relevant task decorators
-            for prop in getattr(f, "__props__", {}):
-                if prop not in self.__model__.attribute_map:
-                    raise ValueError(
-                        f"Unknown property '{prop}' of '{self.__model__}"
-                    )
-
-                setattr(self, prop, f.__props__[prop])
 
             if isinstance(template_or_template_ref, V1alpha1TemplateRef):
                 self.template_ref = template_or_template_ref
@@ -127,10 +137,10 @@ class task():
             self.name: str = self.name or f.__code__.co_name
 
             spec = {
-                prop: getattr(self, f"{prop}") for prop in self.__model__.attribute_map
+                prop: getattr(self, f"{prop}", None) for prop in self.__model__.attribute_map
             }
 
-            return task.__model__(**spec), template_or_template_ref
+            return self.__model__(**spec), template_or_template_ref
 
         return _wrap_task
 
