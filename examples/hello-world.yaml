@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: hello-world
+  generateName: hello-world-
+spec:
+  entrypoint: whalesay
+  templates:
+  - name: whalesay
+    container:
+      name: whalesay
+      image: docker/whalesay:latest
+      command: [cowsay]
+      args: ["hello world"]
+status: {}
