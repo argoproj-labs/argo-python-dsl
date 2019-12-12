@@ -2,7 +2,7 @@
 
 __all__ = [
     "task",
-    "workflow"
+    "Workflow"
 ]
 
 from . import task
