@@ -1,7 +1,9 @@
-"""Argo Workflows SDK."""
+"""Argo Workflows Python SDK."""
 
 __all__ = [
-    "task"
+    "task",
+    "workflow"
 ]
 
-from ._task import task
+from . import task
+from ._workflow import Workflow

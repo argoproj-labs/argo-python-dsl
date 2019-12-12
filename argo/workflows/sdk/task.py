@@ -21,6 +21,23 @@ from argo.workflows.client.models import (
 )
 
 from ._base import Prop
+from ._arguments import (
+    artifact,
+    parameter
+)
+
+
+__all__ = [
+    "artifact",
+    "continue_on",
+    "dependencies",
+    "parameter",
+    "task",
+    "when",
+    "with_items",
+    "with_param",
+    "with_sequence",
+]
 
 
 class task():
@@ -85,7 +102,10 @@ class task():
     ) -> V1alpha1DAGTask:
 
         @wraps(f)
-        def _wrap_task(*args, **kwargs) -> Tuple[V1alpha1DAGTask, Union[V1alpha1Template, None]]:
+        def _wrap_task(
+            *args,
+            **kwargs
+        ) -> Tuple[V1alpha1DAGTask, Union[V1alpha1Template, None]]:
             template_or_template_ref: Union[V1alpha1Template, V1alpha1TemplateRef] = f(
                 *args, **kwargs
             )
