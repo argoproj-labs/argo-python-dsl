@@ -18,14 +18,11 @@ from argo.workflows.client.models import (
     V1alpha1Parameter,
     V1alpha1Sequence,
     V1alpha1Template,
-    V1alpha1TemplateRef
+    V1alpha1TemplateRef,
 )
 
 from ._base import Prop
-from ._arguments import (
-    artifact,
-    parameter
-)
+from ._arguments import artifact, parameter
 
 
 __all__ = [
@@ -39,17 +36,16 @@ __all__ = [
     "with_items",
     "with_param",
     "with_sequence",
-
     # models
     "V1alpha1Template",
-    "V1alpha1TemplateRef"
+    "V1alpha1TemplateRef",
 ]
 
 # return type
 T = Union[V1alpha1Template, V1alpha1TemplateRef]
 
 
-class task():
+class task:
 
     __model__ = V1alpha1DAGTask
 
@@ -68,13 +64,14 @@ class task():
         with_sequence: V1alpha1Sequence = None,
     ):
         """"""
+        self = super().__new__(cls)
+
         # name of the task will be taken from the function name
         # ( if not provided )
-        self = type("Task", (), {"__model__": cls.__model__})
+        self.name = name
 
         self.continue_on = continue_on
         self.dependencies = dependencies
-        self.name = name
         self.when = when
         self.with_items = with_items
         self.with_param = with_param
@@ -84,15 +81,13 @@ class task():
             instance = cls.__call__(self, f)
         else:
             instance = partial(
-                cls, **{k: v for k, v in self.__dict__.items() if not k.startswith("_")})
+                cls, **{k: v for k, v in self.__dict__.items() if not k.startswith("_")}
+            )
 
         # additional model properties
 
         self.arguments: V1alpha1Arguments = V1alpha1Arguments(
-            dict(
-                artifacts=artifacts,
-                parameters=parameters
-            )
+            dict(artifacts=artifacts, parameters=parameters)
         )
 
         # template is the name of the template returned by the wrapped function
@@ -104,30 +99,22 @@ class task():
 
         return instance
 
-    def __call__(
-        self,
-        f: Callable[..., T]
-    ) -> Tuple[V1alpha1DAGTask, Union[T, None]]:
+    def __call__(self, f: Callable[..., T]) -> Tuple[V1alpha1DAGTask, Union[T, None]]:
 
         f.__model__ = self.__model__
 
         # __props__ is set by other relevant task decorators
         for prop in getattr(f, "__props__", {}):
             if prop not in self.__model__.attribute_map:
-                raise ValueError(
-                    f"Unknown property '{prop}' of '{self.__model__}"
-                )
+                raise ValueError(f"Unknown property '{prop}' of '{self.__model__}")
 
             setattr(self, prop, f.__props__[prop])
 
         @wraps(f)
         def _wrap_task(
-            *args,
-            **kwargs
-        ) -> Tuple[V1alpha1DAGTask, Union[V1alpha1Template, None]]:
-            template_or_template_ref: T = f(
-                *args, **kwargs
-            )
+            *args, **kwargs
+        ) -> Tuple[V1alpha1DAGTask, Union[V1alpha1Template, V1alpha1TemplateRef]]:
+            template_or_template_ref: T = f(*args, **kwargs)
 
             if isinstance(template_or_template_ref, V1alpha1TemplateRef):
                 self.template_ref = template_or_template_ref
@@ -137,7 +124,8 @@ class task():
             self.name: str = self.name or f.__code__.co_name
 
             spec = {
-                prop: getattr(self, f"{prop}", None) for prop in self.__model__.attribute_map
+                prop: getattr(self, f"{prop}", None)
+                for prop in self.__model__.attribute_map
             }
 
             return self.__model__(**spec), template_or_template_ref
