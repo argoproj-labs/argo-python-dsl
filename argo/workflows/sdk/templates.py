@@ -1,3 +1,5 @@
+import inspect
+
 from functools import partial
 from functools import wraps
 
@@ -40,6 +42,17 @@ class template(Spec):
     def __new__(cls, f: Callable[..., T]):
         """Workflow spec for V1alpha1Template."""
         self = super().__new__(cls, f)
-        self.name = f.__code__.co_name
+
+        self.name: str = f.__code__.co_name
+        self.inputs = V1alpha1Inputs(
+            parameters=[
+                {
+                    "name": p.name,
+                    "default": p.default if not p.default == inspect._empty else None,
+                }
+                for p in inspect.signature(f).parameters.values()
+                if p.name not in ["self", "cls"]
+            ]
+        )
 
         return self
