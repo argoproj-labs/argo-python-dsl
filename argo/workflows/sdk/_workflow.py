@@ -104,6 +104,7 @@ class WorkflowMeta(ABCMeta):
         if tasks:
             main_template = V1alpha1Template(name="main")
             main_template.dag = V1alpha1DAGTemplate(tasks=tasks)
+
             templates.insert(0, main_template)
 
         spec_dict: dict = klass.spec

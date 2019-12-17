@@ -75,6 +75,7 @@ class Spec(property):
             setattr(self, prop, f.__props__[prop])
 
         sig: inspect.Signature = inspect.signature(f)
+        sig = sig.replace(return_annotation=cls.__model__)
         setattr(self, "__signature__", sig)
 
         for prop in cls.__model__.attribute_map.keys():
