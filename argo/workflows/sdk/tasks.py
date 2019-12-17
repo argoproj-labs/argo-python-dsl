@@ -1,3 +1,5 @@
+import inspect
+
 from functools import partial
 from functools import wraps
 
@@ -23,15 +25,14 @@ from argo.workflows.client.models import (
 
 from ._base import Prop
 from ._base import Spec
-from ._arguments import artifact, parameter
+from ._arguments import argument
 
 
 __all__ = [
     # decorators
-    "artifact",
+    "argument",
     "continue_on",
     "dependencies",
-    "parameter",
     "task",
     "when",
     "with_items",
@@ -55,9 +56,14 @@ class task(Spec):
         self = super().__new__(cls, f)
         self.name = f.__code__.co_name
 
+        self.template: str = None
+        self.template_ref: V1alpha1TemplateRef = None
+
         return self
 
     def __init_model__(self, spec: T, *args, **kwargs):
+        _: Tuple[Any, ...] = args  # ignore
+
         if isinstance(spec, V1alpha1Template):
             self.template: str = spec.name
         elif isinstance(spec, V1alpha1TemplateRef):

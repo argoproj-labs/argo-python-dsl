@@ -23,8 +23,11 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
+from argo.workflows.client.models import V1alpha1Arguments
+from argo.workflows.client.models import V1alpha1Artifact
 from argo.workflows.client.models import V1alpha1DAGTask
 from argo.workflows.client.models import V1alpha1DAGTemplate
+from argo.workflows.client.models import V1alpha1Parameter
 from argo.workflows.client.models import V1alpha1Template
 from argo.workflows.client.models import V1alpha1TemplateRef
 from argo.workflows.client.models import V1alpha1Workflow
@@ -158,7 +161,26 @@ class Workflow(metaclass=WorkflowMeta):
                 if obj.model is not None:
                     # prevents referenced templates from being compiled again
                     return obj.model
-                return obj.__get__(self).__call__()
+
+                args: Dict[str, Any] = {}
+                props: Dict[str, Any] = getattr(obj.fget, "__props__", {})
+
+                arguments: V1alpha1Arguments = props.get("arguments")
+                if arguments:
+                    for artifact in getattr(arguments, "artifacts") or []:
+                        # TODO: Implement artifact passing
+                        raise NotImplementedError(
+                            "Artifact passing is not implemented."
+                        )
+
+                    for param in getattr(arguments, "parameters") or []:
+                        if hasattr(param, "to_dict"):
+                            param = V1alpha1Parameter(**param.to_dict())
+                        else:
+                            param = V1alpha1Parameter(**param)
+                        args[param.name] = param.value or param.default
+
+                return obj.__get__(self).__call__(**args)
             if isinstance(obj, list):
                 return list(map(_compile, obj))
             if hasattr(obj, "attribute_map"):

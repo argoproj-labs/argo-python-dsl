@@ -44,7 +44,7 @@ class SpecProxy(object):
                 setattr(spec, attr, ret)
                 break
 
-        spec.__init_model__(ret)
+        spec.__init_model__(ret, *args, **kwargs)
 
         attr_dict: Dict[str, Any] = {
             k: spec.__dict__[k] for k in spec.__model__.attribute_map
@@ -143,6 +143,8 @@ class PropMeta(type):
                     __model__,
                 )
 
+        props.update({"name": getattr(props, "name", None) or name})
+
         return super().__new__(cls, name, bases, props)
 
 
@@ -156,13 +158,10 @@ class Prop(metaclass=PropMeta):
         return super().__init_subclass__()
 
     def __call__(self, f: Callable):
+        dct: Dict[str, any] = {self.name: self}
         if not hasattr(f, "__props__"):
-            f.__props__ = {self.name: self}
+            f.__props__ = dct
         else:
-            f.__props__.update({self.name: self})
+            f.__props__.update(dct)
 
         return f
-
-    @property
-    def name(self) -> str:
-        return self.__class__.__name__
