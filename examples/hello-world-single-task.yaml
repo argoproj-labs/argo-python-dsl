@@ -13,7 +13,7 @@ spec:
       - name: A
         template: whalesay
 
-    # @task: [A]
+  # @task: [A]
   - name: whalesay
     container:
       name: whalesay

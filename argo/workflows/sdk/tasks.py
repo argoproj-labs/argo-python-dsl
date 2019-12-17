@@ -57,7 +57,7 @@ class task(Spec):
 
         return self
 
-    def __compilehook__(self, spec: T, *args, **kwargs):
+    def __init_model__(self, spec: T, *args, **kwargs):
         if isinstance(spec, V1alpha1Template):
             self.template: str = spec.name
         elif isinstance(spec, V1alpha1TemplateRef):

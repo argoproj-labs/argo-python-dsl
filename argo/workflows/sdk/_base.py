@@ -9,6 +9,7 @@ from typing import Callable
 from typing import Dict
 from typing import Generic
 from typing import Tuple
+from typing import Type
 from typing import TypeVar
 from typing import Union
 
@@ -32,10 +33,10 @@ class SpecProxy(object):
         return self
 
     def __call__(self, *args, **kwargs):
-        T = self._spec.__model__
+        spec: "Spec" = self._spec
 
-        spec: Type["Spec"] = self._spec
-        ret: Any = self._spec.fget(self._obj, *args, **kwargs)
+        T = Type[spec.__model__]
+        ret: Any = spec.fget(self._obj, *args, **kwargs)
 
         for attr, swagger_type in spec.__model__.swagger_types.items():
             t: Any = getattr(models, swagger_type, None)
@@ -43,13 +44,14 @@ class SpecProxy(object):
                 setattr(spec, attr, ret)
                 break
 
-        self._spec.__compilehook__(ret)
+        spec.__init_model__(ret)
 
-        attr_dict = {k: spec.__dict__[k] for k in spec.__model__.attribute_map}
+        attr_dict: Dict[str, Any] = {
+            k: spec.__dict__[k] for k in spec.__model__.attribute_map
+        }
         model: T = spec.__model__(**attr_dict)
 
-        self._spec.model = model
-
+        spec.model = model
         return model
 
 
@@ -69,7 +71,10 @@ class Spec(property):
         self = super().__new__(cls, f)
         self.__compiled_model = None
 
-        # __props__ is set by other relevant template decorators
+        for prop in cls.__model__.attribute_map.keys():
+            setattr(self, prop, None)
+
+        # __props__ is set by Type[Prop] decorator
         for prop in getattr(f, "__props__", {}):
             if prop not in self.__model__.attribute_map:
                 raise ValueError(f"Unknown property '{prop}' of '{self.__model__}")
@@ -79,9 +84,6 @@ class Spec(property):
         sig: inspect.Signature = inspect.signature(f)
         sig = sig.replace(return_annotation=cls.__model__)
         setattr(self, "__signature__", sig)
-
-        for prop in cls.__model__.attribute_map.keys():
-            setattr(self, prop, None)
 
         return self
 
@@ -96,8 +98,8 @@ class Spec(property):
             raise AttributeError(f"Unreadable attribute '{self.fget}'")
         return SpecProxy(self, obj)
 
-    def __compilehook__(self, *args, **kwargs) -> None:
-        """A hook executed after the model has been compiled."""
+    def __init_model__(self, *args, **kwargs) -> None:
+        """A hook executed before creation of a model."""
         pass
 
     @property
