@@ -1,3 +1,4 @@
+import inspect
 import typing
 
 from functools import partial
@@ -17,38 +18,54 @@ T = TypeVar("T")
 
 
 class SpecProxy(object):
-    def __new__(cls, spec: "Spec", obj: Any, *args, **kwargs):
+    """Spec Proxy.
+
+    NOTE: This class is not meant to be used directly.
+    """
+
+    def __new__(cls, spec: "Spec", obj: Any):
         self = super(SpecProxy, cls).__new__(cls)
 
         self._obj = obj
         self._spec = spec
 
-        self._args: Tuple[Any, ...] = args
-        self._kwargs: Dict[str, Any] = kwargs
-
         return self
 
-    def __call__(self):
-        return self._spec.fget(self._obj, *self._args, **self._kwargs)
+    def __call__(self, *args, **kwargs):
+        T = self._spec.__model__
+
+        spec: Type["Spec"] = self._spec
+        ret: Any = self._spec.fget(self._obj, *args, **kwargs)
+
+        for attr, swagger_type in spec.__model__.swagger_types.items():
+            t: Any = getattr(models, swagger_type, None)
+            if t == type(ret):
+                setattr(spec, attr, ret)
+                break
+
+        attr_dict = {k: spec.__dict__[k] for k in spec.__model__.attribute_map}
+        model: T = spec.__model__(**attr_dict)
+
+        self._spec.model = model
+
+        return model
 
 
 class Spec(property):
-    """Base class for Workflow Specs."""
+    """Base class for Workflow Specs.
+
+    NOTE: This class is not meant to be used directly.
+    """
 
     __model__ = T
 
     def __new__(
         cls, f: Callable[..., T],
     ):
-        self = super().__new__(cls)
+        f.__model__ = cls.__model__
 
-        for prop in cls.__model__.attribute_map.keys():
-            setattr(self, prop, None)
-
-        return self
-
-    def __call__(self, f: Callable[..., T]) -> Callable[..., T]:
-        f.__model__ = self.__model__
+        self = super().__new__(cls, f)
+        self.__compiled_model = None
 
         # __props__ is set by other relevant template decorators
         for prop in getattr(f, "__props__", {}):
@@ -57,17 +74,43 @@ class Spec(property):
 
             setattr(self, prop, f.__props__[prop])
 
-        return f
+        sig: inspect.Signature = inspect.signature(f)
+        setattr(self, "__signature__", sig)
+
+        for prop in cls.__model__.attribute_map.keys():
+            setattr(self, prop, None)
+
+        return self
+
+    def __call__(self, *args, **kwargs) -> T:
+        # This function is required for the call signature and is NEVER called
+        raise NotImplementedError("This function shouldn't be called directly.")
 
     def __get__(self, obj: Any, objtype: Any = None, **kwargs):
         if obj is None:
             return self
         if self.fget is None:
             raise AttributeError(f"Unreadable attribute '{self.fget}'")
-        return SpecProxy(self, obj, **kwargs)
+        return SpecProxy(self, obj)
+
+    @property
+    def model(self) -> Union[T, None]:
+        """Return the model specification.
+
+        :returns: T if compiled, otherwise None
+        """
+        return self.__compiled_model
+
+    @model.setter
+    def model(self, spec: T):
+        if not isinstance(spec, self.__model__):
+            raise TypeError(f"Expected type {self.__model__}, got: {type(spec)}")
+
+        self.__compiled_model = spec
 
 
 class PropMeta(type):
+    """Prop metaclass."""
 
     __model__ = Generic[T]
 
@@ -95,7 +138,10 @@ class PropMeta(type):
 
 
 class Prop(metaclass=PropMeta):
-    """Base class for Spec props."""
+    """Base class for Spec props.
+
+    NOTE: This class is not meant to be used directly.
+    """
 
     def __init_subclass__(cls):
         return super().__init_subclass__()

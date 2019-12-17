@@ -23,7 +23,6 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from argo.workflows import models
 from argo.workflows.client.models import V1alpha1DAGTask
 from argo.workflows.client.models import V1alpha1DAGTemplate
 from argo.workflows.client.models import V1alpha1Template
@@ -127,59 +126,51 @@ class Workflow(metaclass=WorkflowMeta):
 
         :para compile: bool, whether to compile during initialization [True]
         """
-        self.__compiled = False
-        self._model: Union[V1alpha1Workflow, None] = None
+        self.__compiled_model: Union[V1alpha1Workflow, None] = None
 
         if compile:
             self.compile()
 
     @property
-    def compiled(self) -> bool:
-        return self.__compiled
-
-    @compiled.setter
-    def compiled(self, is_compiled: bool):
-        if not isinstance(is_compiled, bool):
-            raise TypeError(f"Expected type {bool}, got: {type(is_compiled)}")
-
-        self.__compiled = is_compiled
-
     def model(self) -> Union[V1alpha1Workflow, None]:
         """Return the Workflow specification.
 
         :returns: V1alpha1Workflow if compiled, otherwise None
         """
-        return self.model if self.compiled else None
+        return self.__compiled_model
+
+    @model.setter
+    def model(self, spec: V1alpha1Workflow):
+        if not isinstance(spec, self.__model__):
+            raise TypeError(f"Expected type {self.__model__}, got: {type(spec)}")
+
+        self.__compiled_model = spec
 
     def compile(self) -> V1alpha1Workflow:
         """Compile the Workflow class to V1alpha1Workflow model."""
-        if self.compiled:
-            return Workflow.__model__(**self.to_dict(omitempty=False))
+        model: V1alpha1Workflow = self.model
+        if model is not None:
+            return model
 
-        def _compile(prop: Any):
-            if hasattr(prop, "__model__"):
-                spec = prop.__get__(self).__call__()
-                for attr, swagger_type in prop.__model__.swagger_types.items():
-                    t: Any = getattr(models, swagger_type, None)
-                    if t == type(spec):
-                        setattr(prop, attr, spec)
-                attr = {k: prop.__dict__[k] for k in prop.__model__.attribute_map}
-                return prop.__model__(**attr)
-            if isinstance(prop, list):
-                return list(map(_compile, prop))
-            if hasattr(prop, "attribute_map"):
-                for attr in prop.attribute_map:
-                    value: Any = _compile(getattr(prop, attr))
-                    setattr(prop, attr, value)
+        def _compile(obj: Any):
+            if hasattr(obj, "__model__"):
+                if obj.model is not None:
+                    # prevents referenced templates from being compiled again
+                    return obj.model
+                return obj.__get__(self).__call__()
+            if isinstance(obj, list):
+                return list(map(_compile, obj))
+            if hasattr(obj, "attribute_map"):
+                for attr in obj.attribute_map:
+                    value: Any = _compile(getattr(obj, attr))
+                    setattr(obj, attr, value)
 
-            return prop
+            return obj
 
         self.spec: V1alpha1WorkflowSpec = _compile(self.spec)
 
         model: V1alpha1Workflow = Workflow.__model__(**self.to_dict(omitempty=False))
-
         self.model = model
-        self.compiled = True
 
         return model
 
