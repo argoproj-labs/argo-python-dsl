@@ -1,0 +1,23 @@
+# @file: hello-world-single-task.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: hello-world
+  generateName: hello-world-
+spec:
+  entrypoint: main
+  templates:
+  - name: main
+    dag:
+      tasks:
+      - name: A
+        template: whalesay
+
+    # @task: [A]
+  - name: whalesay
+    container:
+      name: whalesay
+      image: docker/whalesay:latest
+      command: [cowsay]
+      args: ["hello world"]
+status: {}

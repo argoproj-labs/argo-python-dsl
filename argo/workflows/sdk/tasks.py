@@ -57,6 +57,14 @@ class task(Spec):
 
         return self
 
+    def __compilehook__(self, spec: T, *args, **kwargs):
+        if isinstance(spec, V1alpha1Template):
+            self.template: str = spec.name
+        elif isinstance(spec, V1alpha1TemplateRef):
+            self.template_ref: V1alpha1TemplateRef = spec
+        else:
+            raise TypeError(f"Expected {T}, got: {type(spec)}")
+
 
 class dependencies(Prop):
 

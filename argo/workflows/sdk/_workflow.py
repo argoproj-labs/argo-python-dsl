@@ -108,7 +108,7 @@ class WorkflowMeta(ABCMeta):
             templates.insert(0, main_template)
 
         spec_dict: dict = klass.spec
-        spec_dict["entrypoint"] = props.get("entrypoint", "")
+        spec_dict["entrypoint"] = props.get("entrypoint", "main")
         spec_dict["templates"] = templates
 
         klass.spec: V1alpha1WorkflowSpec = V1alpha1WorkflowSpec(**spec_dict)

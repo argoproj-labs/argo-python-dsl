@@ -43,6 +43,8 @@ class SpecProxy(object):
                 setattr(spec, attr, ret)
                 break
 
+        self._spec.__compilehook__(ret)
+
         attr_dict = {k: spec.__dict__[k] for k in spec.__model__.attribute_map}
         model: T = spec.__model__(**attr_dict)
 
@@ -93,6 +95,10 @@ class Spec(property):
         if self.fget is None:
             raise AttributeError(f"Unreadable attribute '{self.fget}'")
         return SpecProxy(self, obj)
+
+    def __compilehook__(self, *args, **kwargs) -> None:
+        """A hook executed after the model has been compiled."""
+        pass
 
     @property
     def model(self) -> Union[T, None]:
