@@ -112,14 +112,23 @@ class task:
 
         @wraps(f)
         def _wrap_task(
-            *args, **kwargs
+            klass: Type["Workflow"], *args, **kwargs
         ) -> Tuple[V1alpha1DAGTask, Union[V1alpha1Template, V1alpha1TemplateRef]]:
-            template_or_template_ref: T = f(*args, **kwargs)
+            ret: Union[T, Callable] = f(klass, *args, **kwargs)
+
+            template_or_template_ref: T
+            if isinstance(ret, Callable):
+                # wrapped method
+                template_or_template_ref = ret.__call__(klass, *args, **kwargs)
+            else:
+                template_or_template_ref = ret
 
             if isinstance(template_or_template_ref, V1alpha1TemplateRef):
                 self.template_ref = template_or_template_ref
-            else:
+            elif isinstance(template_or_template_ref, V1alpha1Template):
                 self.template = template_or_template_ref.name
+            else:
+                raise TypeError(f"Expected {T}, got: {type(template_or_template_ref)}")
 
             self.name: str = self.name or f.__code__.co_name
 

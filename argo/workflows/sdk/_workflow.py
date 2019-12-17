@@ -23,6 +23,7 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
+from argo.workflows import models
 from argo.workflows.client.models import V1alpha1DAGTask
 from argo.workflows.client.models import V1alpha1DAGTemplate
 from argo.workflows.client.models import V1alpha1Template
@@ -93,12 +94,12 @@ class WorkflowMeta(ABCMeta):
 
             # V1alpha1Template
             if issubclass(model, V1alpha1Template):
-                template = prop.__get__(klass)
+                template = prop
                 templates.append(template)
 
             # V1alpha1DAGTask
             elif issubclass(model, V1alpha1DAGTask):
-                task = prop.__get__(klass)
+                task = prop
                 tasks.append(task)
 
         if tasks:
@@ -118,14 +119,19 @@ class Workflow(metaclass=WorkflowMeta):
 
     __model__ = V1alpha1Workflow
 
-    def __init__(self):
+    def __init__(self, compile=True):
         """Workflow is the definition of a workflow resource.
 
         This class is a base class for Argo Workflows. It is not meant
         to be instantiated directly.
+
+        :para compile: bool, whether to compile during initialization [True]
         """
         self.__compiled = False
-        self.compile()
+        self._model: Union[V1alpha1Workflow, None] = None
+
+        if compile:
+            self.compile()
 
     @property
     def compiled(self) -> bool:
@@ -138,43 +144,43 @@ class Workflow(metaclass=WorkflowMeta):
 
         self.__compiled = is_compiled
 
+    def model(self) -> Union[V1alpha1Workflow, None]:
+        """Return the Workflow specification.
+
+        :returns: V1alpha1Workflow if compiled, otherwise None
+        """
+        return self.model if self.compiled else None
+
     def compile(self) -> V1alpha1Workflow:
         """Compile the Workflow class to V1alpha1Workflow model."""
         if self.compiled:
             return Workflow.__model__(**self.to_dict(omitempty=False))
 
-        spec: V1alpha1WorkflowSpec = self.spec
+        def _compile(prop: Any):
+            if hasattr(prop, "__model__"):
+                spec = prop.__get__(self)
+                for attr, swagger_type in prop.__model__.swagger_types.items():
+                    t: Any = getattr(models, swagger_type, None)
+                    if t == type(spec):
+                        setattr(prop, attr, spec)
+                attr = {k: prop.__dict__[k] for k in prop.__model__.attribute_map}
+                return prop.__model__(**attr)
+            if isinstance(prop, list):
+                return list(map(_compile, prop))
+            if hasattr(prop, "attribute_map"):
+                for attr in prop.attribute_map:
+                    value: Any = _compile(getattr(prop, attr))
+                    setattr(prop, attr, value)
 
-        templates: Dict[str, V1alpha1Template] = {}
-        for template in spec.templates:
-            if getattr(template, "__model__", None):
-                template: V1alpha1Template = template.__call__()
-                continue
+            return prop
 
-            tasks: List[Union[V1alpha1DAGTask, Callable]] = getattr(
-                template.dag, "tasks", []
-            )
-            for i in range(len(tasks)):
-                task: Union[V1alpha1DAGTask, Callable] = tasks[i]
-                if getattr(task, "__model__", None):
-                    task: V1alpha1DAGTask
-                    template: Union[V1alpha1DAGTemplate, V1alpha1TemplateRef]
-                    task, task_template = task.__call__()
+        self.spec: V1alpha1WorkflowSpec = _compile(self.spec)
 
-                    if task_template is not None:
-                        # TODO: Recurse here to allow nested templates
-                        templates[task_template.name] = task_template
-
-                    tasks[i] = task
-
-                template.dag.tasks[i] = task
-
-            templates[template.name] = template
-
-        self.spec.templates = list(templates.values())
         model: V1alpha1Workflow = Workflow.__model__(**self.to_dict(omitempty=False))
 
+        self.model = model
         self.compiled = True
+
         return model
 
     def to_yaml(self, **kwargs) -> str:
