@@ -1,5 +1,6 @@
 import typing
 
+from functools import partial
 from functools import wraps
 
 from typing import Any
@@ -13,6 +14,22 @@ from typing import Union
 from argo.workflows import models
 
 T = TypeVar("T")
+
+
+class SpecProxy(object):
+    def __new__(cls, spec: "Spec", obj: Any, *args, **kwargs):
+        self = super(SpecProxy, cls).__new__(cls)
+
+        self._obj = obj
+        self._spec = spec
+
+        self._args: Tuple[Any, ...] = args
+        self._kwargs: Dict[str, Any] = kwargs
+
+        return self
+
+    def __call__(self):
+        return self._spec.fget(self._obj, *self._args, **self._kwargs)
 
 
 class Spec(property):
@@ -41,6 +58,13 @@ class Spec(property):
             setattr(self, prop, f.__props__[prop])
 
         return f
+
+    def __get__(self, obj: Any, objtype: Any = None, **kwargs):
+        if obj is None:
+            return self
+        if self.fget is None:
+            raise AttributeError(f"Unreadable attribute '{self.fget}'")
+        return SpecProxy(self, obj, **kwargs)
 
 
 class PropMeta(type):

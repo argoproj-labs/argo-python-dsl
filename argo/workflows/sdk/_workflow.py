@@ -158,7 +158,7 @@ class Workflow(metaclass=WorkflowMeta):
 
         def _compile(prop: Any):
             if hasattr(prop, "__model__"):
-                spec = prop.__get__(self)
+                spec = prop.__get__(self).__call__()
                 for attr, swagger_type in prop.__model__.swagger_types.items():
                     t: Any = getattr(models, swagger_type, None)
                     if t == type(spec):
