@@ -1,5 +1,6 @@
 import inspect
 
+from inflection import dasherize
 from functools import partial
 from functools import wraps
 
@@ -56,7 +57,7 @@ class task(Spec):
     def __new__(cls, f: Callable[..., T]):
         """Workflow spec for V1alpha1Template."""
         self = super().__new__(cls, f)
-        self.name = f.__code__.co_name
+        self.name = dasherize(f.__code__.co_name)
 
         self.template: str = None
         self.template_ref: V1alpha1TemplateRef = None

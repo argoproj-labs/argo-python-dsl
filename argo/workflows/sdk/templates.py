@@ -1,5 +1,6 @@
 import inspect
 
+from inflection import dasherize
 from functools import partial
 from functools import wraps
 
@@ -24,12 +25,14 @@ from ._arguments import arguments
 from ._base import Prop
 from ._base import Spec
 from ._inputs import inputs
+from ._outputs import outputs
 
 
 __all__ = [
     # decorators
     "arguments",
     "inputs",
+    "outputs",
     "template",
     # models
     "V1alpha1Artifact",
@@ -48,6 +51,6 @@ class template(Spec):
     def __new__(cls, f: Callable[..., T]):
         """Workflow spec for V1alpha1Template."""
         self = super().__new__(cls, f)
-        self.name: str = f.__code__.co_name
+        self.name = dasherize(f.__code__.co_name)
 
         return self

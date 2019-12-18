@@ -2,7 +2,7 @@ from typing import Callable
 from typing import List
 
 from argo.workflows.client.models import (
-    V1alpha1Inputs,
+    V1alpha1Outputs,
     V1alpha1Artifact,
     V1alpha1Parameter,
 )
@@ -10,16 +10,16 @@ from argo.workflows.client.models import (
 from ._base import Prop
 from ._arguments import arguments
 
-__all__ = ["inputs", "V1alpha1Artifact", "V1alpha1Parameter"]
+__all__ = ["outputs", "V1alpha1Artifact", "V1alpha1Parameter"]
 
 
-class inputs:
+class outputs:
     """Arguments namespace."""
 
-    class artifact(arguments.artifact, extends=("inputs", V1alpha1Inputs)):
+    class artifact(arguments.artifact, extends=("outputs", V1alpha1Outputs)):
 
         __model__ = V1alpha1Artifact
 
-    class parameter(arguments.parameter, extends=("inputs", V1alpha1Inputs)):
+    class parameter(arguments.parameter, extends=("outputs", V1alpha1Outputs)):
 
         __model__ = V1alpha1Parameter

@@ -168,10 +168,11 @@ class Workflow(metaclass=WorkflowMeta):
                 arguments: V1alpha1Arguments = props.get("arguments")
                 if arguments:
                     for artifact in getattr(arguments, "artifacts", []) or []:
-                        # TODO: Implement artifact passing
-                        raise NotImplementedError(
-                            "Artifact passing is not implemented."
-                        )
+                        if hasattr(artifact, "to_dict"):
+                            artifact = V1alpha1Artifact(**artifact.to_dict())
+                        else:
+                            artifact = V1alpha1Artifact(**artifact)
+                        args[artifact.name] = artifact
 
                     for param in getattr(arguments, "parameters", []) or []:
                         if hasattr(param, "to_dict"):

@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 black = "*"
+deepdiff = "*"
 
 [packages]
 argo-workflows = "*"

@@ -1,3 +1,4 @@
+from typing import Any
 from typing import Callable
 from typing import List
 
@@ -15,29 +16,52 @@ __all__ = ["arguments", "V1alpha1Artifact", "V1alpha1Parameter"]
 class arguments:
     """Arguments namespace."""
 
-    class artifact(Prop, extends="arguments"):
+    class artifact(Prop, extends=("arguments", V1alpha1Arguments)):
 
         __model__ = V1alpha1Artifact
 
-    class parameter(Prop, extends="arguments"):
+        def __call__(self, f: Callable):
+            artifacts: List[V1alpha1Artifact] = [self]
+
+            prop: Any
+            prop_name: str
+            prop_name, prop = self.__extends__
+
+            if not hasattr(f, "__props__"):
+                f.__props__ = {prop_name: prop(artifacts=artifacts)}
+            else:
+                arguments: Type[prop] = getattr(f.__props__, prop_name, prop())
+
+                if not getattr(arguments, "artifacts"):
+                    arguments.artifacts = artifacts
+                else:
+                    arguments.artifacts.extend(artifacts)
+
+                f.__props__[prop_name] = arguments
+
+            return f
+
+    class parameter(Prop, extends=("arguments", V1alpha1Arguments)):
 
         __model__ = V1alpha1Parameter
 
         def __call__(self, f: Callable):
             parameters: List[V1alpha1Parameter] = [self]
 
+            prop: Any
+            prop_name: str
+            prop_name, prop = self.__extends__
+
             if not hasattr(f, "__props__"):
-                f.__props__ = {"arguments": V1alpha1Arguments(parameters=parameters)}
+                f.__props__ = {prop_name: prop(parameters=parameters)}
             else:
-                arguments: V1alpha1Arguments = getattr(
-                    f.__props__, "arguments", V1alpha1Arguments()
-                )
+                arguments: Type[prop] = getattr(f.__props__, prop_name, prop())
 
                 if not getattr(arguments, "parameters"):
                     arguments.parameters = parameters
                 else:
                     arguments.parameters.extend(parameters)
 
-                f.__props__["arguments"] = arguments
+                f.__props__[prop_name] = arguments
 
             return f

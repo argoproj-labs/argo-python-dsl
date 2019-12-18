@@ -1,3 +1,4 @@
+# @file: dag-diamond.yaml
 # The following workflow executes a diamond workflow
 #
 #   A
