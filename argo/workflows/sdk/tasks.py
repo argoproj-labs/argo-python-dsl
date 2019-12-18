@@ -23,16 +23,18 @@ from argo.workflows.client.models import (
     V1alpha1TemplateRef,
 )
 
+from ._arguments import arguments
 from ._base import Prop
 from ._base import Spec
-from ._arguments import argument
+from ._inputs import inputs
 
 
 __all__ = [
     # decorators
-    "argument",
+    "arguments",
     "continue_on",
     "dependencies",
+    "inputs",
     "task",
     "when",
     "with_items",

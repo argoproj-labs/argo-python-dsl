@@ -9,33 +9,35 @@ from argo.workflows.client.models import (
 
 from ._base import Prop
 
-__all__ = ["arguments"]
+__all__ = ["arguments", "V1alpha1Artifact", "V1alpha1Parameter"]
 
 
-class argument:
-    """Argument namespace."""
+class arguments:
+    """Arguments namespace."""
 
-    class artifact(Prop):
+    class artifact(Prop, extends="arguments"):
 
         __model__ = V1alpha1Artifact
 
-    class parameter(Prop):
+    class parameter(Prop, extends="arguments"):
 
         __model__ = V1alpha1Parameter
 
         def __call__(self, f: Callable):
-            if not hasattr(f, "__props__"):
-                f.__props__ = {"arguments": V1alpha1Arguments(parameters=[self])}
-            else:
-                parameters = [self]
+            parameters: List[V1alpha1Parameter] = [self]
 
-                arguments: Dict[str, Any] = getattr(f.__props__, "arguments", {})
-                if not arguments.get("parameters"):
-                    arguments["parameters"] = parameters
+            if not hasattr(f, "__props__"):
+                f.__props__ = {"arguments": V1alpha1Arguments(parameters=parameters)}
+            else:
+                arguments: V1alpha1Arguments = getattr(
+                    f.__props__, "arguments", V1alpha1Arguments()
+                )
+
+                if not getattr(arguments, "parameters"):
+                    arguments.parameters = parameters
                 else:
-                    arguments["parameters"].extend(parameters)
+                    arguments.parameters.extend(parameters)
 
                 f.__props__["arguments"] = arguments
 
             return f
-

@@ -12,7 +12,7 @@ from typing import Tuple
 from typing import Union
 
 from argo.workflows.client.models import (
-    V1alpha1Arguments,
+    V1alpha1Artifact,
     V1alpha1Inputs,
     V1alpha1Outputs,
     V1alpha1Parameter,
@@ -20,14 +20,20 @@ from argo.workflows.client.models import (
     V1Container,
 )
 
+from ._arguments import arguments
 from ._base import Prop
 from ._base import Spec
+from ._inputs import inputs
 
 
 __all__ = [
     # decorators
+    "arguments",
+    "inputs",
     "template",
     # models
+    "V1alpha1Artifact",
+    "V1alpha1Parameter",
     "V1Container",
 ]
 
@@ -42,17 +48,6 @@ class template(Spec):
     def __new__(cls, f: Callable[..., T]):
         """Workflow spec for V1alpha1Template."""
         self = super().__new__(cls, f)
-
         self.name: str = f.__code__.co_name
-        self.inputs = V1alpha1Inputs(
-            parameters=[
-                V1alpha1Parameter(
-                    name=p.name,
-                    default=p.default if not p.default == inspect._empty else None,
-                )
-                for p in inspect.signature(f).parameters.values()
-                if p.name not in ["self", "cls"]
-            ]
-        )
 
         return self

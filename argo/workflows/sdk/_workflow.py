@@ -15,8 +15,8 @@ from inflection import dasherize
 from inflection import underscore
 
 from typing import Any
-from typing import Dict
 from typing import Callable
+from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -167,18 +167,18 @@ class Workflow(metaclass=WorkflowMeta):
 
                 arguments: V1alpha1Arguments = props.get("arguments")
                 if arguments:
-                    for artifact in getattr(arguments, "artifacts") or []:
+                    for artifact in getattr(arguments, "artifacts", []) or []:
                         # TODO: Implement artifact passing
                         raise NotImplementedError(
                             "Artifact passing is not implemented."
                         )
 
-                    for param in getattr(arguments, "parameters") or []:
+                    for param in getattr(arguments, "parameters", []) or []:
                         if hasattr(param, "to_dict"):
                             param = V1alpha1Parameter(**param.to_dict())
                         else:
                             param = V1alpha1Parameter(**param)
-                        args[param.name] = param.value or param.default
+                        args[param.name] = param
 
                 return obj.__get__(self).__call__(**args)
             if isinstance(obj, list):

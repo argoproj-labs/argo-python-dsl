@@ -143,7 +143,10 @@ class PropMeta(type):
                     __model__,
                 )
 
-        props.update({"name": getattr(props, "name", None) or name})
+        if kwargs.get("extends") is not None:
+            props["__extends__"] = kwargs["extends"]
+
+        props.update({"name": getattr(props, "name", name)})
 
         return super().__new__(cls, name, bases, props)
 
