@@ -23,11 +23,18 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install tree
+
+        # fix permissions
+        sudo find . -type f -exec chmod 666 {} \;
+        sudo find . -type d -exec chmod 774 {} \;
+
+        sudo find /usr/local/bin -type f -exec chmod 666 {} \;
+
         #s2i
         curl \
           -L https://github.com/openshift/source-to-image/releases/download/v1.2.0/source-to-image-v1.2.0-2a579ecd-linux-amd64.tar.gz \
           -o release.tar.gz
-        sudo tar -xvf release.tar.gz && chmod +x ./s2i ./sti
+        sudo tar -C /usr/local/bin -xvf release.tar.gz
 
         # python dependencies
         python -m pip install --upgrade pip pipenv twine
