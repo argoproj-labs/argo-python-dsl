@@ -1,7 +1,8 @@
-# argo-python-sdk
-Python SDK for [Argo Workflows](https://github.com/argoproj/argo)
+# argo-python-sdk &nbsp; [![Release](https://img.shields.io/github/v/tag/cermakm/argo-python-sdk.svg?sort=semver&label=Release)](https://github.com/CermakM/argo-python-sdk/releases/latest)
 
-:warning: The project is currently in a development phase and is not yet meant for production purposes.
+[![License](https://img.shields.io/github/license/cermakm/argo-python-sdk)](https://github.com/CermakM/argo-python-sdk/blob/master/LICENSE) &nbsp; [![CI](https://github.com/cermakm/argo-python-sdk/workflows/CI/badge.svg)](https://github.com/cermakm/argo-python-sdk/actions) &nbsp;
+
+### Python SDK for [Argo Workflows](https://github.com/argoproj/argo)
 
 <div style="text-align: justify">
 
