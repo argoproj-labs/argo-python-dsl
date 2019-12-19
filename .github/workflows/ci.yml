@@ -12,7 +12,7 @@ on:
 jobs:
   test:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
 
     steps:
     - uses: actions/checkout@v1
@@ -24,20 +24,26 @@ jobs:
       run: |
         sudo apt-get install tree
 
+        mkdir -p $HOME/.local/bin
+
         # fix permissions
+        export PATH=$HOME/.local/bin:/usr/local/bin:$PATH
+
         sudo find . -type f -exec chmod 666 {} \;
         sudo find . -type d -exec chmod 774 {} \;
+        sudo find $HOME/.local -type f -exec chmod 666 {} \;
+        sudo find $HOME/.local -type d -exec chmod 774 {} \;
 
-        sudo find /usr/local/bin -type f -exec chmod 666 {} \;
+        sudo chown -R $USER:$USER $HOME/.local
 
         #s2i
         curl \
           -L https://github.com/openshift/source-to-image/releases/download/v1.2.0/source-to-image-v1.2.0-2a579ecd-linux-amd64.tar.gz \
           -o release.tar.gz
-        sudo tar -C /usr/local/bin -xvf release.tar.gz
+        tar -C $HOME/.local/bin -xvf release.tar.gz
 
         # python dependencies
-        python -m pip install --upgrade pip pipenv twine
+        python -m pip install --user --upgrade pip pipenv==2018.11.26 twine
         pipenv install --dev
 
     # - name: Lint with flake8instance
@@ -50,4 +56,7 @@ jobs:
 
     - name: Test
       run: |
-        bash tests/test-notebooks.sh
+        export PATH=$HOME/.local/bin:/usr/local/bin:$PATH
+
+        # run tests
+        pipenv run bash tests/test-notebooks.sh
