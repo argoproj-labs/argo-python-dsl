@@ -23,6 +23,12 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install tree
+        #s2i
+        curl \
+          -L https://github.com/openshift/source-to-image/releases/download/v1.2.0/source-to-image-v1.2.0-2a579ecd-linux-amd64.tar.gz \
+          -o release.tar.gz
+        sudo tar -xvf release.tar.gz && chmod +x ./s2i ./sti
+
         # python dependencies
         python -m pip install --upgrade pip pipenv twine
         pipenv install --dev
