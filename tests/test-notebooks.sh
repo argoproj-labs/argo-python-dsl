@@ -21,12 +21,12 @@ for nb_path in $(ls examples/*.ipynb); do
         'examples/' quay.io/cermakm/jupyter-notebook-s2i ${IMAGE_NAME} \
         > "/tmp/test-${notebook}-build.stdout"
 
-        docker run \
+        docker run -i \
         -v $(pwd)/argo/workflows/sdk/:/opt/app-root/lib/python3.6/site-packages/argo/workflows/sdk/:ro,z \
         -v $(pwd)/examples/:/opt/app-root/src/examples/:ro,z \
         --env JUPYTER_NOTEBOOK_PATH="examples/$notebook" \
         --name "test-${notebook}" \
-        --rm -it \
+        --rm \
         --user $(id -u) \
         ${IMAGE_NAME}:latest
     }
