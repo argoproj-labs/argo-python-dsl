@@ -1,0 +1,31 @@
+# @file: resource.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: k8s-jobs
+  generateName: k8s-jobs-
+spec:
+  entrypoint: pi
+  templates:
+  - name: pi
+    resource:
+      action: create
+      successCondition: status.succeeded > 0
+      failureCondition: status.failed > 3
+      manifest: |
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          generateName: pi-job-
+        spec:
+          template:
+            metadata:
+              name: pi
+            spec:
+              containers:
+              - name: pi
+                image: perl
+                command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+              restartPolicy: Never
+          backoffLimit: 4
+status: {}

@@ -17,6 +17,7 @@ from argo.workflows.client.models import (
     V1alpha1Inputs,
     V1alpha1Outputs,
     V1alpha1Parameter,
+    V1alpha1ResourceTemplate,
     V1alpha1Template,
     V1Container,
 )
@@ -37,6 +38,7 @@ __all__ = [
     # models
     "V1alpha1Artifact",
     "V1alpha1Parameter",
+    "V1alpha1ResourceTemplate",
     "V1Container",
 ]
 
