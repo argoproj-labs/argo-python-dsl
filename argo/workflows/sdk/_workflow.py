@@ -198,9 +198,9 @@ class Workflow(metaclass=WorkflowMeta):
 
         return model
 
-    def to_yaml(self, **kwargs) -> str:
+    def to_yaml(self, omitempty=True, **kwargs) -> str:
         """Returns the Workflow manifest as a YAML."""
-        d: dict = self.to_dict(omitempty=True)
+        d: dict = self.to_dict(omitempty=omitempty)
 
         opts = dict(default_flow_style=False)
         opts.update(kwargs)
