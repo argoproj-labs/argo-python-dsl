@@ -1,5 +1,3 @@
-import inspect
-
 from inflection import dasherize
 from functools import partial
 from functools import wraps

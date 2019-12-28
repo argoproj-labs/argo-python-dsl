@@ -1,4 +1,6 @@
 import inspect
+import re
+import textwrap
 
 from inflection import dasherize
 from functools import partial
@@ -18,6 +20,7 @@ from argo.workflows.client.models import (
     V1alpha1Outputs,
     V1alpha1Parameter,
     V1alpha1ResourceTemplate,
+    V1alpha1ScriptTemplate,
     V1alpha1Template,
     V1Container,
 )
@@ -32,6 +35,7 @@ from ._outputs import outputs
 __all__ = [
     # decorators
     "arguments",
+    "closure",
     "inputs",
     "outputs",
     "template",
@@ -39,11 +43,12 @@ __all__ = [
     "V1alpha1Artifact",
     "V1alpha1Parameter",
     "V1alpha1ResourceTemplate",
+    "V1alpha1ScriptTemplate",
     "V1Container",
 ]
 
 # return type
-T = Union[V1Container]
+T = Union[V1alpha1ResourceTemplate, V1alpha1ScriptTemplate, V1Container]
 
 
 class template(Spec):
@@ -56,3 +61,39 @@ class template(Spec):
         self.name = dasherize(f.__code__.co_name)
 
         return self
+
+
+class closure(Prop):
+    """Workflow spec for V1alpha1Template using closure."""
+
+    __model__ = V1alpha1ScriptTemplate
+
+    def __init__(self, image: str):
+        """Create script from a function source.
+
+        :param image: str, image to be used to execute the script
+        """
+        super().__init__(source="")
+
+        self.name = "script"
+
+        self.image = image
+        self.command = ["python"]
+
+    def __call__(self, f: Callable[..., None]) -> V1alpha1Template:
+        super().__call__(f)
+
+        self.name = dasherize(f.__code__.co_name)
+
+        source: List[str]
+        source, _ = inspect.getsourcelines(f.__code__)
+
+        co_start: int = 0
+        for i, line in enumerate(source):
+            if re.search(r"\)( -> (.+))?:[\s\n\r]+$", line):
+                co_start = i + 1
+                break
+
+        self.source = textwrap.dedent("".join(source[co_start:]))
+
+        return template(f)
