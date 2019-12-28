@@ -1,0 +1,42 @@
+# @file: scripts.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: scripts-python
+  generateName: scripts-python-
+spec:
+  entrypoint: main
+  templates:
+  - name: main
+    dag:
+      tasks:
+      - name: generate
+        template: gen-random-int
+      - name: print
+        template: print-message
+        arguments:
+          parameters:
+          - name: message
+            value: "{{steps.generate.outputs.result}}"
+        dependencies: [generate]
+
+  - name: gen-random-int
+    script:
+      image: python:alpine3.6
+      name: gen-random-int
+      command: [python]
+      source: |
+        import random
+        i = random.randint(1, 100)
+        print(i)
+
+  - name: print-message
+    inputs:
+      parameters:
+      - name: message
+    container:
+      image: alpine:latest
+      name: print-message
+      command: [sh, -c]
+      args: ["echo result was: {{inputs.parameters.message}}"]
+status: {}
