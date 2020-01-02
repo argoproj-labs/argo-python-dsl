@@ -15,6 +15,7 @@ from typing import Tuple
 from typing import Union
 
 from argo.workflows.client.models import (
+    V1alpha1Arguments,
     V1alpha1Artifact,
     V1alpha1Inputs,
     V1alpha1Outputs,
@@ -40,6 +41,7 @@ __all__ = [
     "outputs",
     "template",
     # models
+    "V1alpha1Arguments",
     "V1alpha1Artifact",
     "V1alpha1Parameter",
     "V1alpha1ResourceTemplate",

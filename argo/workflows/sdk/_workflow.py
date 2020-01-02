@@ -61,7 +61,10 @@ class WorkflowMeta(ABCMeta):
 
         # Required fields
         props["metadata"]: V1ObjectMeta = V1ObjectMeta(**metadata_dict)
-        props["spec"] = {}
+        props["spec"] = {
+            k: props.get(k) for k in V1alpha1WorkflowSpec.attribute_map
+            if props.get(k)
+        }
         props["status"] = {}
 
         bases = (*bases, cls.__model__)
