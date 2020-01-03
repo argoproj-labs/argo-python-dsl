@@ -98,4 +98,7 @@ class closure(Prop):
 
         self.source = textwrap.dedent("".join(source[co_start:]))
 
-        return template(f)
+        tmpl = template(f)
+        tmpl.callable = False
+
+        return tmpl

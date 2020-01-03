@@ -24,11 +24,13 @@ class SpecProxy(object):
     NOTE: This class is not meant to be used directly.
     """
 
-    def __new__(cls, spec: "Spec", obj: Any):
+    def __new__(cls, spec: "Spec", obj: Any, callable: bool):
         self = super(SpecProxy, cls).__new__(cls)
 
         self._obj = obj
         self._spec = spec
+
+        self._callable = callable
 
         return self
 
@@ -36,15 +38,17 @@ class SpecProxy(object):
         spec: "Spec" = self._spec
 
         T = Type[spec.__model__]
-        ret: Any = spec.fget(self._obj, *args, **kwargs)
 
-        for attr, swagger_type in spec.__model__.swagger_types.items():
-            t: Any = getattr(models, swagger_type, None)
-            if t == type(ret):
-                setattr(spec, attr, ret)
-                break
+        if self._callable:
+            ret: Any = spec.fget(self._obj, *args, **kwargs)
 
-        spec.__init_model__(ret, *args, **kwargs)
+            for attr, swagger_type in spec.__model__.swagger_types.items():
+                t: Any = getattr(models, swagger_type, None)
+                if t == type(ret):
+                    setattr(spec, attr, ret)
+                    break
+
+            spec.__init_model__(ret, *args, **kwargs)
 
         attr_dict: Dict[str, Any] = {
             k: spec.__dict__[k] for k in spec.__model__.attribute_map
@@ -63,12 +67,11 @@ class Spec(property):
 
     __model__ = T
 
-    def __new__(
-        cls, f: Callable[..., T],
-    ):
+    def __new__(cls, f: Callable[..., T]):
         f.__model__ = cls.__model__
 
         self = super().__new__(cls, f)
+        self.__callable = True
         self.__compiled_model = None
 
         for prop in cls.__model__.attribute_map.keys():
@@ -96,11 +99,20 @@ class Spec(property):
             return self
         if self.fget is None:
             raise AttributeError(f"Unreadable attribute '{self.fget}'")
-        return SpecProxy(self, obj)
+        return SpecProxy(self, obj, callable=self.__callable)
 
     def __init_model__(self, *args, **kwargs) -> None:
         """A hook executed before creation of a model."""
-        pass
+
+    @property
+    def callable(self) -> bool:
+        """Return whether current spec is callable."""
+        return self.__callable
+
+    @callable.setter
+    def callable(self, is_callable: bool):
+        """Set whether current spec is callable."""
+        self.__callable = is_callable
 
     @property
     def model(self) -> Union[T, None]:
