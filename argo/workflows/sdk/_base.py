@@ -91,7 +91,7 @@ class Spec(property):
         return self
 
     def __call__(self, *args, **kwargs) -> T:
-        # This function is required for the call signature and is NEVER called
+        # This function is required for the call signature and should NOT be called
         raise NotImplementedError("This function shouldn't be called directly.")
 
     def __get__(self, obj: Any, objtype: Any = None, **kwargs):

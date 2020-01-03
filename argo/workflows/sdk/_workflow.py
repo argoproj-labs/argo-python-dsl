@@ -8,12 +8,14 @@ import json
 import yaml
 
 import pprint
+import requests
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
     from yaml import Loader, Dumper
 
+from inflection import camelize
 from inflection import dasherize
 from inflection import underscore
 
@@ -168,6 +170,11 @@ class Workflow(metaclass=WorkflowMeta):
         """Return Workflow name."""
         return self.metadata.name
 
+    @name.setter
+    def name(self, name: str):
+        """Return Workflow name."""
+        self.metadata.name = name
+
     @property
     def validated(self) -> bool:
         """Return whether this workflow has been validated."""
@@ -287,6 +294,53 @@ class Workflow(metaclass=WorkflowMeta):
         self.__validated = True
 
         return model
+
+    def submit(
+        self,
+        client: client.V1alpha1Api,
+        namespace: str,
+        *,
+        parameters: Optional[Dict[str, str]] = None,
+    ) -> str:
+        """Submit an Argo Workflow to a given namespace.
+
+        :returns: str, Workflow name
+        """
+        parameters = parameters or {}
+
+        new_parameters: List[V1alpha1Parameter] = []
+        for name, value in parameters.items():
+            param = V1alpha1Parameter(name=name, value=value)
+            new_parameters.append(param)
+
+        if hasattr(self.spec, "arguments"):
+            for p in getattr(self.spec.arguments, "parameters", []):
+                if p.name in parameters:
+                    continue  # overridden
+                elif not getattr(p, "value") and not getattr(p, "default"):
+                    raise Exception(f"Missing required workflow parameter {p.name}")
+
+                new_parameters.append(p)
+
+            self.spec.arguments.parameters = new_parameters
+
+        body: Dict[str, Any]
+        if not getattr(self, "validated", True):
+            _LOGGER.debug(
+                "The Workflow has not been previously validated."
+                "Sanitizing for serialization."
+            )
+            body = camelize(self.to_dict())
+        else:
+            body = client.api_client.sanitize_for_serialization(self)
+
+        # submit the workflow
+        created: models.V1alpha1Workflow = client.create_namespaced_workflow(
+            namespace, body
+        )
+
+        # return the computed Workflow ID
+        return self.name
 
     def to_yaml(self, omitempty=True, **kwargs) -> str:
         """Returns the Workflow manifest as a YAML."""
