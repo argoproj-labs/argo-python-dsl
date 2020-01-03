@@ -82,7 +82,7 @@ class closure(Prop):
         self.image = image
         self.command = ["python"]
 
-    def __call__(self, f: Callable[..., None]) -> V1alpha1Template:
+    def __call__(self, f: Callable[..., None]) -> template:
         super().__call__(f)
 
         self.name = dasherize(f.__code__.co_name)

@@ -1,10 +1,13 @@
 from abc import ABCMeta
 
+import logging
 import six
 import types
 
-import pprint
+import json
 import yaml
+
+import pprint
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -14,6 +17,8 @@ except ImportError:
 from inflection import dasherize
 from inflection import underscore
 
+from pathlib import Path
+
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -22,6 +27,8 @@ from typing import Optional
 from typing import Tuple
 from typing import Type
 from typing import Union
+
+from argo.workflows import client
 
 from argo.workflows.client.models import V1alpha1Arguments
 from argo.workflows.client.models import V1alpha1Artifact
@@ -38,6 +45,9 @@ from argo.workflows.client.models import V1ObjectMeta
 from . import _utils
 
 __all__ = ["Workflow"]
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class WorkflowMeta(ABCMeta):
@@ -62,8 +72,7 @@ class WorkflowMeta(ABCMeta):
         # Required fields
         props["metadata"]: V1ObjectMeta = V1ObjectMeta(**metadata_dict)
         props["spec"] = {
-            k: props.get(k) for k in V1alpha1WorkflowSpec.attribute_map
-            if props.get(k)
+            k: props.get(k) for k in V1alpha1WorkflowSpec.attribute_map if props.get(k)
         }
         props["status"] = {}
 
@@ -134,6 +143,7 @@ class Workflow(metaclass=WorkflowMeta):
         :para compile: bool, whether to compile during initialization [True]
         """
         self.__compiled_model: Union[V1alpha1Workflow, None] = None
+        self.__validated = False
 
         if compile:
             self.compile()
@@ -152,6 +162,81 @@ class Workflow(metaclass=WorkflowMeta):
             raise TypeError(f"Expected type {self.__model__}, got: {type(spec)}")
 
         self.__compiled_model = spec
+
+    @property
+    def name(self) -> Union[str, None]:
+        """Return Workflow name."""
+        return self.metadata.name
+
+    @property
+    def validated(self) -> bool:
+        """Return whether this workflow has been validated."""
+        return self.__validated
+
+    @classmethod
+    def from_file(cls, fp: Union[str, Path], validate: bool = True) -> "Workflow":
+        """Create a Workflow from a file."""
+        wf_path = Path(fp)
+
+        wf: Dict[str, Any] = yaml.safe_load(wf_path.read_text())
+        return cls.from_dict(wf, validate=validate)
+
+    @classmethod
+    def from_url(cls, url: str, validate: bool = True) -> "Workflow":
+        """Create a Workflow from a remote file."""
+        resp = requests.get(
+            "https://raw.githubusercontent.com/argoproj/argo/master/examples/hello-world.yaml"
+        )
+        resp.raise_for_status()
+
+        wf: Dict[str, Any] = yaml.safe_load(resp.text)
+        return cls.from_dict(wf, validate=validate)
+
+    @classmethod
+    def from_dict(cls, wf: Dict[str, Any], validate: bool = True) -> "Workflow":
+        """Create a Workflow from a dict."""
+        # work around validation issues and allow empty status
+        wf["status"] = wf.get("status", {}) or {}
+
+        return cls.from_string(json.dumps(wf), validate=validate)
+
+    @classmethod
+    def from_string(cls, wf: str, validate: bool = True) -> "Workflow":
+        """Create a Workflow from a YAML string."""
+        body = {"data": wf}
+
+        return cls.__deserialize(body, validate=validate)
+
+    @classmethod
+    def __deserialize(cls, body: Dict[str, str], *, validate: bool) -> "Workflow":
+        """Deserialize given object into a Workflow instance."""
+        wf: Union[V1alpha1Workflow, Dict[str, Any]]
+        if validate:
+            attr = type("Response", (), body)
+
+            wf = client.ApiClient().deserialize(attr, cls.__model__)
+        else:
+            _LOGGER.warning(
+                "Validation is turned off. This may result in missing or invalid attributes."
+            )
+            wf = json.loads(body["data"])
+
+        self = cls(compile=False)
+
+        if isinstance(wf, V1alpha1Workflow):
+            self.__dict__.update(
+                api_version=wf.api_version,
+                kind=wf.kind,
+                metadata=wf.metadata,
+                spec=wf.spec,
+                status=wf.status,  # a small hack to overcome validation
+            )
+        else:
+            self.__dict__.update(**wf)
+
+        self.__validated = validate
+
+        return self
 
     def compile(self) -> V1alpha1Workflow:
         """Compile the Workflow class to V1alpha1Workflow model."""
@@ -198,6 +283,8 @@ class Workflow(metaclass=WorkflowMeta):
 
         model: V1alpha1Workflow = Workflow.__model__(**self.to_dict(omitempty=False))
         self.model = model
+
+        self.__validated = True
 
         return model
 
