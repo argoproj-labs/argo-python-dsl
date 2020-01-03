@@ -156,9 +156,10 @@ class PropMeta(type):
                 )
 
         if kwargs.get("extends") is not None:
-            props["__extends__"] = kwargs["extends"]
+            props["__extends__"] = kwargs.pop("extends")
 
-        props.update({"name": getattr(props, "name", name)})
+        props.update({"name": props.get("name", name)})
+        props.update(kwargs)
 
         return super().__new__(cls, name, bases, props)
 
@@ -172,8 +173,13 @@ class Prop(metaclass=PropMeta):
     def __init_subclass__(cls):
         return super().__init_subclass__()
 
-    def __call__(self, f: Callable):
-        dct: Dict[str, any] = {self.name: self}
+    def __call__(self, f: Callable, **kwargs):
+        if "name" in kwargs:
+            name = kwargs.pop("name")
+        else:
+            name = self.name
+
+        dct: Dict[str, any] = {name: self, **kwargs}
         if not hasattr(f, "__props__"):
             f.__props__ = dct
         else:

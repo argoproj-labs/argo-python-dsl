@@ -65,25 +65,13 @@ class template(Spec):
         return self
 
 
-class closure(Prop):
+class closure(Prop, command=["python"], source=""):
     """Workflow spec for V1alpha1Template using closure."""
 
     __model__ = V1alpha1ScriptTemplate
 
-    def __init__(self, image: str):
-        """Create script from a function source.
-
-        :param image: str, image to be used to execute the script
-        """
-        super().__init__(source="")
-
-        self.name = "script"
-
-        self.image = image
-        self.command = ["python"]
-
     def __call__(self, f: Callable[..., None]) -> template:
-        super().__call__(f)
+        super().__call__(f, name="script")
 
         self.name = dasherize(f.__code__.co_name)
 
