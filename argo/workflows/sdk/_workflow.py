@@ -133,7 +133,7 @@ class WorkflowMeta(ABCMeta):
                     script: List[str] = [f"class {scope}:\n"]
                     script.append(f"    Scoped objects injected from scope '{scope}'.\n\n")
 
-                    scoped_objects = scopes.get(scope)
+                    scoped_objects = scopes.get(scope) or []
                     for so in scoped_objects:
                         source, _ = inspect.getsourcelines(
                             so.__get__(cls).__code__
