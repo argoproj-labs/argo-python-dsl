@@ -173,7 +173,7 @@ class Prop(metaclass=PropMeta):
     def __init_subclass__(cls):
         return super().__init_subclass__()
 
-    def __call__(self, f: Callable, **kwargs):
+    def __call__(self, f: Callable, **kwargs) -> Callable:
         if "name" in kwargs:
             name = kwargs.pop("name")
         else:

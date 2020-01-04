@@ -4,6 +4,7 @@ import logging
 import six
 import types
 
+import inspect
 import json
 import yaml
 
@@ -101,6 +102,19 @@ class WorkflowMeta(ABCMeta):
         tasks: List[V1alpha1DAGTask] = []
         templates: List[V1alpha1Template] = []
 
+        scopes: Dict[str, List[Any]] = {}
+
+        # get scopes first
+        for key, prop in props.items():
+            scope = getattr(prop, "__scope__", None)
+            if scope is None:
+                continue
+
+            scoped_objects = [prop]
+            scoped_objects.extend(scopes.get(scope, []))
+
+            scopes[scope] = scoped_objects
+
         for key, prop in props.items():
             model = getattr(prop, "__model__", None)
             if model is None:
@@ -111,6 +125,29 @@ class WorkflowMeta(ABCMeta):
             # V1alpha1Template
             if issubclass(model, V1alpha1Template):
                 template = prop
+
+                # closures require special treatment
+                if hasattr(template, "__closure__") and template.script is not None:
+                    scope: str = template.__closure__
+
+                    script: List[str] = [f"class {scope}:\n"]
+                    script.append(f"    Scoped objects injected from scope '{scope}'.\n\n")
+
+                    scoped_objects = scopes.get(scope)
+                    for so in scoped_objects:
+                        source, _ = inspect.getsourcelines(
+                            so.__get__(cls).__code__
+                        )
+
+                        for co_start, line in enumerate(source):
+                            if line.strip().startswith("def"):
+                                break
+
+                        source = ["    @staticmethod\n"] + source[co_start:] + ["\n"]
+                        script.extend(source)
+
+                    template.script.source = "".join(script + ["\n", template.script.source])
+
                 templates.append(template)
 
             # V1alpha1DAGTask
@@ -160,6 +197,7 @@ class Workflow(metaclass=WorkflowMeta):
 
     @model.setter
     def model(self, spec: V1alpha1Workflow):
+        """Set Workflow specification."""
         if not isinstance(spec, self.__model__):
             raise TypeError(f"Expected type {self.__model__}, got: {type(spec)}")
 
@@ -167,12 +205,12 @@ class Workflow(metaclass=WorkflowMeta):
 
     @property
     def name(self) -> Union[str, None]:
-        """Return Workflow name."""
+        """Return the Workflow name."""
         return self.metadata.name
 
     @name.setter
     def name(self, name: str):
-        """Return Workflow name."""
+        """Set Workflow name."""
         self.metadata.name = name
 
     @property
