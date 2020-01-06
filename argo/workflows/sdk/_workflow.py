@@ -11,11 +11,6 @@ import yaml
 import pprint
 import requests
 
-try:
-    from yaml import CLoader as Loader, CDumper as Dumper
-except ImportError:
-    from yaml import Loader, Dumper
-
 from inflection import camelize
 from inflection import dasherize
 from inflection import underscore
@@ -131,7 +126,7 @@ class WorkflowMeta(ABCMeta):
                     scope: str = template.__closure__
 
                     script: List[str] = [f"class {scope}:\n"]
-                    script.append(f"    Scoped objects injected from scope '{scope}'.\n\n")
+                    script.append(f'    """Scoped objects injected from scope \'{scope}\'."""\n\n')
 
                     scoped_objects = scopes.get(scope) or []
                     for so in scoped_objects:
@@ -387,7 +382,7 @@ class Workflow(metaclass=WorkflowMeta):
         opts = dict(default_flow_style=False)
         opts.update(kwargs)
 
-        serialized = yaml.dump(d, Dumper=Dumper, **opts)
+        serialized = yaml.dump(d, Dumper=_utils.BlockDumper, **opts)
 
         return serialized
 

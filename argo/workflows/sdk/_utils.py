@@ -1,11 +1,29 @@
-"""Argo Workflow Python SDK utilities."""
+import re
+import yaml
 
 from typing import Any
 from typing import Dict
 
 from uuid import uuid4
 
+try:
+    from yaml import CDumper as Dumper
+except ImportError:
+    from yaml import Dumper
+
+"""Argo Workflow Python SDK utilities."""
+
 __mark = "___%s" % uuid4()
+
+
+class BlockDumper(Dumper):
+    def represent_scalar(self, tag, value, style=None):
+        if re.search("\n", value):
+            style = "|"
+            # remove trailing spaces and newlines which are not allowed in YAML blocks
+            value = re.sub(" \n", "", value).strip()
+
+        return super().represent_scalar(tag, value, style)
 
 
 def _omitempty_rec(obj: Dict[str, Any]):
