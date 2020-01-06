@@ -1,8 +1,7 @@
 from abc import ABCMeta
 
 import logging
-import six
-import types
+import re
 
 import inspect
 import json
@@ -22,6 +21,7 @@ from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Set
 from typing import Tuple
 from typing import Type
 from typing import Union
@@ -123,25 +123,7 @@ class WorkflowMeta(ABCMeta):
 
                 # closures require special treatment
                 if hasattr(template, "__closure__") and template.script is not None:
-                    scope: str = template.__closure__
-
-                    script: List[str] = [f"class {scope}:\n"]
-                    script.append(f'    """Scoped objects injected from scope \'{scope}\'."""\n\n')
-
-                    scoped_objects = scopes.get(scope) or []
-                    for so in scoped_objects:
-                        source, _ = inspect.getsourcelines(
-                            so.__get__(cls).__code__
-                        )
-
-                        for co_start, line in enumerate(source):
-                            if line.strip().startswith("def"):
-                                break
-
-                        source = ["    @staticmethod\n"] + source[co_start:] + ["\n"]
-                        script.extend(source)
-
-                    template.script.source = "".join(script + ["\n", template.script.source])
+                    template = cls.__compile_closure(template, scopes)
 
                 templates.append(template)
 
@@ -161,6 +143,71 @@ class WorkflowMeta(ABCMeta):
         spec_dict["templates"] = templates
 
         klass.spec: V1alpha1WorkflowSpec = V1alpha1WorkflowSpec(**spec_dict)
+
+    @classmethod
+    def __compile_closure(
+        cls, template: V1alpha1Template, scopes: Dict[str, Any] = None
+    ) -> V1alpha1Template:
+        scopes = scopes or {}
+
+        scope: str = template.__closure__
+
+        script: List[str] = [f"class {scope}:\n"]
+        script.append(f'    """Scoped objects injected from scope \'{scope}\'."""\n\n')
+
+        scoped_objects = scopes.get(scope) or []
+        for so in scoped_objects:
+            source, _ = inspect.getsourcelines(so.__get__(cls).__code__)
+
+            for co_start, line in enumerate(source):
+                if line.strip().startswith("def"):
+                    break
+
+            source = ["    @staticmethod\n"] + source[co_start:] + ["\n"]
+            script.extend(source)
+
+        script = script + [
+            "\n",
+            *template.script.source.splitlines(keepends=True),
+        ]
+
+        import_lines: List[str] = []
+        source_lines: List[str] = []
+
+        import_in_previous_line = False
+        for line in script:
+            if "import " in line:
+                import_lines.append(line.strip(" "))
+                import_in_previous_line = True
+            else:
+                is_blankline = not bool(line.strip())
+                if import_in_previous_line and is_blankline:
+                    # blank line separating imports
+                    pass
+                else:
+                    source_lines.append(line)
+
+                import_in_previous_line = False
+
+        # split `imports` and `from` and sort them separately
+        import_lines_with_from: Set[str] = set()
+        import_lines_without_from: Set[str] = set()
+
+        for line in import_lines:
+            if "from " in line:
+                import_lines_with_from.add(line)
+            else:
+                import_lines_without_from.add(line)
+
+        import_lines = [
+            *sorted(import_lines_without_from),
+            "\n",
+            *sorted(import_lines_with_from),
+        ]
+
+        template.script.source = "".join((*import_lines, "\n\n", *source_lines))
+
+        return template
 
 
 class Workflow(metaclass=WorkflowMeta):
