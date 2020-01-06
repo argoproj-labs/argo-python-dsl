@@ -34,7 +34,7 @@ def _omitempty_rec(obj: Dict[str, Any]):
         if k == __mark:
             continue
 
-        if not v:  # empty
+        if v is None:  # empty
             continue
 
         if isinstance(v, dict) and __mark not in v:
