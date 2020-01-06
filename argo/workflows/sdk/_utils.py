@@ -21,7 +21,7 @@ class BlockDumper(Dumper):
         if re.search("\n", value):
             style = "|"
             # remove trailing spaces and newlines which are not allowed in YAML blocks
-            value = re.sub(" \n", "", value).strip()
+            value = re.sub(" +\n", "\n", value).strip()
 
         return super().represent_scalar(tag, value, style)
 
