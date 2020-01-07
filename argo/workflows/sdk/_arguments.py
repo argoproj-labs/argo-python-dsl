@@ -30,7 +30,7 @@ class arguments:
             if not hasattr(f, "__props__"):
                 f.__props__ = {prop_name: prop(artifacts=artifacts)}
             else:
-                arguments: Type[prop] = getattr(f.__props__, prop_name, prop())
+                arguments: Type[prop] = f.__props__.get(prop_name, prop())
 
                 if not getattr(arguments, "artifacts"):
                     arguments.artifacts = artifacts
@@ -55,7 +55,7 @@ class arguments:
             if not hasattr(f, "__props__"):
                 f.__props__ = {prop_name: prop(parameters=parameters)}
             else:
-                arguments: Type[prop] = getattr(f.__props__, prop_name, prop())
+                arguments: Type[prop] = f.__props__.get(prop_name, prop())
 
                 if not getattr(arguments, "parameters"):
                     arguments.parameters = parameters
