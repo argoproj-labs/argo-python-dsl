@@ -35,7 +35,8 @@ from argo.workflows.client.models import (
     V1VolumeMount,
 )
 
-from ._arguments import arguments
+from ._arguments import artifact
+from ._arguments import parameter
 from ._base import Prop
 from ._base import Spec
 from ._inputs import inputs
@@ -44,10 +45,11 @@ from ._outputs import outputs
 
 __all__ = [
     # decorators
-    "arguments",
+    "artifact",
     "closure",
     "inputs",
     "outputs",
+    "parameter",
     "scope",
     "template",
     # models

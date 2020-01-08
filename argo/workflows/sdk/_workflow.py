@@ -70,7 +70,7 @@ class WorkflowMeta(ABCMeta):
         # Required fields
         props["metadata"]: V1ObjectMeta = V1ObjectMeta(**metadata_dict)
         props["spec"] = {
-            k: props.get(k) for k in V1alpha1WorkflowSpec.attribute_map if props.get(k)
+            k: props.pop(k) for k in V1alpha1WorkflowSpec.attribute_map if props.get(k)
         }
         props["status"] = {}
 
@@ -151,6 +151,9 @@ class WorkflowMeta(ABCMeta):
         scopes = scopes or {}
 
         scope: str = template.__closure__
+        if scope is None:
+            # nothing to do
+            return template
 
         script: List[str] = [f"class {scope}:\n"]
         script.append(f'    """Scoped objects injected from scope \'{scope}\'."""\n\n')

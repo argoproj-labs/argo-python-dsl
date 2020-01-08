@@ -10,58 +10,55 @@ from argo.workflows.client.models import (
 
 from ._base import Prop
 
-__all__ = ["arguments", "V1alpha1Artifact", "V1alpha1Parameter"]
+__all__ = ["artifact", "parameter", "V1alpha1Artifact", "V1alpha1Parameter"]
 
 
-class arguments:
-    """Arguments namespace."""
+class artifact(Prop, extends=("arguments", V1alpha1Arguments)):
 
-    class artifact(Prop, extends=("arguments", V1alpha1Arguments)):
+    __model__ = V1alpha1Artifact
 
-        __model__ = V1alpha1Artifact
+    def __call__(self, f: Callable):
+        artifacts: List[V1alpha1Artifact] = [self]
 
-        def __call__(self, f: Callable):
-            artifacts: List[V1alpha1Artifact] = [self]
+        prop: Any
+        prop_name: str
+        prop_name, prop = self.__extends__
 
-            prop: Any
-            prop_name: str
-            prop_name, prop = self.__extends__
+        if not hasattr(f, "__props__"):
+            f.__props__ = {prop_name: prop(artifacts=artifacts)}
+        else:
+            arguments: Type[prop] = f.__props__.get(prop_name, prop())
 
-            if not hasattr(f, "__props__"):
-                f.__props__ = {prop_name: prop(artifacts=artifacts)}
+            if not getattr(arguments, "artifacts"):
+                arguments.artifacts = artifacts
             else:
-                arguments: Type[prop] = f.__props__.get(prop_name, prop())
+                arguments.artifacts.extend(artifacts)
 
-                if not getattr(arguments, "artifacts"):
-                    arguments.artifacts = artifacts
-                else:
-                    arguments.artifacts.extend(artifacts)
+            f.__props__[prop_name] = arguments
 
-                f.__props__[prop_name] = arguments
+        return f
 
-            return f
+class parameter(Prop, extends=("arguments", V1alpha1Arguments)):
 
-    class parameter(Prop, extends=("arguments", V1alpha1Arguments)):
+    __model__ = V1alpha1Parameter
 
-        __model__ = V1alpha1Parameter
+    def __call__(self, f: Callable):
+        parameters: List[V1alpha1Parameter] = [self]
 
-        def __call__(self, f: Callable):
-            parameters: List[V1alpha1Parameter] = [self]
+        prop: Any
+        prop_name: str
+        prop_name, prop = self.__extends__
 
-            prop: Any
-            prop_name: str
-            prop_name, prop = self.__extends__
+        if not hasattr(f, "__props__"):
+            f.__props__ = {prop_name: prop(parameters=parameters)}
+        else:
+            arguments: Type[prop] = f.__props__.get(prop_name, prop())
 
-            if not hasattr(f, "__props__"):
-                f.__props__ = {prop_name: prop(parameters=parameters)}
+            if not getattr(arguments, "parameters"):
+                arguments.parameters = parameters
             else:
-                arguments: Type[prop] = f.__props__.get(prop_name, prop())
+                arguments.parameters.extend(parameters)
 
-                if not getattr(arguments, "parameters"):
-                    arguments.parameters = parameters
-                else:
-                    arguments.parameters.extend(parameters)
+            f.__props__[prop_name] = arguments
 
-                f.__props__[prop_name] = arguments
-
-            return f
+        return f

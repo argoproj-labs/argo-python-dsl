@@ -8,7 +8,8 @@ from argo.workflows.client.models import (
 )
 
 from ._base import Prop
-from ._arguments import arguments
+from ._arguments import artifact as artifact
+from ._arguments import parameter as parameter
 
 __all__ = ["inputs", "V1alpha1Artifact", "V1alpha1Parameter"]
 
@@ -16,10 +17,10 @@ __all__ = ["inputs", "V1alpha1Artifact", "V1alpha1Parameter"]
 class inputs:
     """Arguments namespace."""
 
-    class artifact(arguments.artifact, extends=("inputs", V1alpha1Inputs)):
+    class artifact(artifact, extends=("inputs", V1alpha1Inputs)):
 
         __model__ = V1alpha1Artifact
 
-    class parameter(arguments.parameter, extends=("inputs", V1alpha1Inputs)):
+    class parameter(parameter, extends=("inputs", V1alpha1Inputs)):
 
         __model__ = V1alpha1Parameter
