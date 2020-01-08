@@ -425,9 +425,22 @@ class Workflow(metaclass=WorkflowMeta):
         # return the computed Workflow ID
         return self.name
 
+    def to_file(self, fp: Union[Path, str], fmt="yaml", **kwargs):
+        """Dumps the Workflow to a file."""
+        d: Dict[str, Any] = _utils.sanitize_for_serialization(self)
+
+        opts = kwargs
+
+        if fmt == "json":
+            path = Path(fp).write_text(json.dumps(d, **opts))
+        else:
+            path = Path(fp).write_text(
+                yaml.dump(d, Dumper=_utils.BlockDumper, **opts) + "\n"
+            )
+
     def to_yaml(self, omitempty=True, **kwargs) -> str:
         """Returns the Workflow manifest as a YAML."""
-        d: dict = self.to_dict(omitempty=omitempty)
+        d: Dict[str, Any] = self.to_dict(omitempty=omitempty)
 
         opts = dict(default_flow_style=False)
         opts.update(kwargs)
