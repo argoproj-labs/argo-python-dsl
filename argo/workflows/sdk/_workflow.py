@@ -232,6 +232,10 @@ class Workflow(metaclass=WorkflowMeta):
         if compile:
             self.compile()
 
+    def __hash__(self) -> str:
+        """Compute hash of this Workflow."""
+        return self.to_str().__hash__()
+
     @property
     def model(self) -> Union[V1alpha1Workflow, None]:
         """Return the Workflow specification.
