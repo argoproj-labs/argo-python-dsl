@@ -158,24 +158,24 @@ from argo.workflows.sdk.templates import *
 class DagDiamond(Workflow):
 
     @task
-    @arguments.parameter(name="message", value="A")
+    @parameter(name="message", value="A")
     def A(self, message: V1alpha1Parameter) -> V1alpha1Template:
         return self.echo(message=message)
 
     @task
-    @arguments.parameter(name="message", value="B")
+    @parameter(name="message", value="B")
     @dependencies(["A"])
     def B(self, message: V1alpha1Parameter) -> V1alpha1Template:
         return self.echo(message=message)
 
     @task
-    @arguments.parameter(name="message", value="C")
+    @parameter(name="message", value="C")
     @dependencies(["A"])
     def C(self, message: V1alpha1Parameter) -> V1alpha1Template:
         return self.echo(message=message)
 
     @task
-    @arguments.parameter(name="message", value="D")
+    @parameter(name="message", value="D")
     @dependencies(["B", "C"])
     def D(self, message: V1alpha1Parameter) -> V1alpha1Template:
         return self.echo(message=message)
@@ -201,7 +201,7 @@ class DagDiamond(Workflow):
 
 <div style="text-align: justify">
 
-`Artifacts` can be passed similarly to `parameters` in three forms: `arguments`, `inputs` and `outputs`
+`Artifacts` can be passed similarly to `parameters` in three forms: `arguments`, `inputs` and `outputs`, where `arguments` is the default one (simply `@artifact` or `@parameter`).
 
 I.e.: `inputs.artifact(...)`
 
@@ -291,7 +291,7 @@ class ArtifactPassing(Workflow):
         return self.whalesay()
 
     @task
-    @arguments.artifact(
+    @artifact(
         name="message",
         _from="{{tasks.generate-artifact.outputs.artifacts.hello-art}}"
     )
