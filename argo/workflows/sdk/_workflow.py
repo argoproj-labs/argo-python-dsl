@@ -350,14 +350,14 @@ class Workflow(metaclass=WorkflowMeta):
                             artifact = V1alpha1Artifact(**artifact.to_dict())
                         else:
                             artifact = V1alpha1Artifact(**artifact)
-                        args[artifact.name] = artifact
+                        args[underscore(artifact.name)] = artifact
 
                     for param in getattr(arguments, "parameters", []) or []:
                         if hasattr(param, "to_dict"):
                             param = V1alpha1Parameter(**param.to_dict())
                         else:
                             param = V1alpha1Parameter(**param)
-                        args[param.name] = param
+                        args[underscore(param.name)] = param
 
                 return obj.__get__(self).__call__(**args)
             if isinstance(obj, list):
@@ -400,8 +400,12 @@ class Workflow(metaclass=WorkflowMeta):
             for p in getattr(self.spec.arguments, "parameters", []):
                 if p.name in parameters:
                     continue  # overridden
-                elif not getattr(p, "value") and not getattr(p, "default"):
-                    raise Exception(f"Missing required workflow parameter {p.name}")
+                elif not getattr(p, "value"):
+                    default = getattr(p, "default")
+                    if default is not None:
+                        p.value = default
+                    else:
+                        raise Exception(f"Missing required workflow parameter {p.name}")
 
                 new_parameters.append(p)
 
