@@ -208,7 +208,7 @@ class WorkflowMeta(ABCMeta):
             *sorted(import_lines_with_from),
         ]
 
-        template.script.source = "".join((*import_lines, "\n\n", *source_lines))
+        template.script.source = "".join((*import_lines, "\n", *source_lines))
 
         return template
 
