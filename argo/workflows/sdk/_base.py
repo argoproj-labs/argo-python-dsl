@@ -142,8 +142,13 @@ class PropMeta(type):
 
         if __model__ is not None:
             # typing
-            if hasattr(typing, __model__.__name__):
-                props["__type__"] = __model__.__extra__
+            if hasattr(__model__, "__origin__"):
+                try:
+                    # Python 3.5, 3.6
+                    props["__type__"] = __model__.__extra__
+                except AttributeError:
+                    # Python >=3.7
+                    props["__type__"] = __model__.__origin__
                 bases = (
                     *bases,
                     props["__type__"],
