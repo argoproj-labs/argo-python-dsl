@@ -11,9 +11,9 @@ __all__ = [
     "__copyright__",
 ]
 
-__title__ = "argo-workflows-sdk"
-__summary__ = "SDK for Argo Workflows"
-__uri__ = "https://github.com/CermakM/argo-python-sdk"
+__title__ = "argo-workflows-dsl"
+__summary__ = "DSL for Argo Workflows"
+__uri__ = "https://github.com/CermakM/argo-python-dsl"
 
 __version__ = "0.1.0-dev"
 

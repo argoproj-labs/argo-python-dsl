@@ -22,7 +22,7 @@ for nb_path in $(ls examples/*.ipynb); do
         > "/tmp/test-${notebook}-build.stdout"
 
         docker run -i \
-        -v $(pwd)/argo/workflows/sdk/:/opt/app-root/lib/python3.6/site-packages/argo/workflows/sdk/:ro,z \
+        -v $(pwd)/argo/workflows/dsl/:/opt/app-root/lib/python3.6/site-packages/argo/workflows/dsl/:ro,z \
         -v $(pwd)/examples/:/opt/app-root/src/examples/:ro,z \
         --env JUPYTER_NOTEBOOK_PATH="examples/$notebook" \
         --name "test-${notebook}" \

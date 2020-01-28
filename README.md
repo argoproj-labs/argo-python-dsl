@@ -1,16 +1,16 @@
-# argo-python-sdk &nbsp; [![Release](https://img.shields.io/github/v/tag/cermakm/argo-python-sdk.svg?sort=semver&label=Release)](https://github.com/CermakM/argo-python-sdk/releases/latest)
+# argo-python-dsl &nbsp; [![Release](https://img.shields.io/github/v/tag/cermakm/argo-python-dsl.svg?sort=semver&label=Release)](https://github.com/CermakM/argo-python-dsl/releases/latest)
 
-[![License](https://img.shields.io/github/license/cermakm/argo-python-sdk)](https://github.com/CermakM/argo-python-sdk/blob/master/LICENSE) &nbsp; [![CI](https://github.com/cermakm/argo-python-sdk/workflows/CI/badge.svg)](https://github.com/cermakm/argo-python-sdk/actions) &nbsp;
+[![License](https://img.shields.io/github/license/cermakm/argo-python-dsl)](https://github.com/CermakM/argo-python-dsl/blob/master/LICENSE) &nbsp; [![CI](https://github.com/cermakm/argo-python-dsl/workflows/CI/badge.svg)](https://github.com/cermakm/argo-python-dsl/actions) &nbsp;
 
-### Python SDK for [Argo Workflows](https://github.com/argoproj/argo)
+### Python DSL for [Argo Workflows](https://github.com/argoproj/argo)
 
 <div style="text-align: justify">
 
 If you're new to Argo, we recommend checking out the examples in pure YAML. The language is descriptive and the Argo [examples](https://github.com/argoproj/argo/tree/master/examples) provide an exhaustive explanation.
 
-For a more experienced audience, this SDK grants you the ability to programatically define Argo Workflows in Python which is then translated to the Argo YAML specification.
+For a more experienced audience, this DSL grants you the ability to programatically define Argo Workflows in Python which is then translated to the Argo YAML specification.
 
-The SDK makes use of the Argo models defined in the [Argo Python client](https://github.com/CermakM/argo-client-python) repository. Combining the two approaches we are given the whole low-level control over Argo Workflows.
+The DSL makes use of the Argo models defined in the [Argo Python client](https://github.com/CermakM/argo-client-python) repository. Combining the two approaches we are given the whole low-level control over Argo Workflows.
 
 </div>
 
@@ -53,10 +53,10 @@ spec:
 <td valign="top"><p>
 
 ```python
-from argo.workflows.sdk import Workflow
-from argo.workflows.sdk import template
+from argo.workflows.dsl import Workflow
+from argo.workflows.dsl import template
 
-from argo.workflows.sdk.templates import V1Container
+from argo.workflows.dsl.templates import V1Container
 
 
 class HelloWorld(Workflow):
@@ -149,10 +149,10 @@ spec:
 <td valign="top"><p>
 
 ```python
-from argo.workflows.sdk import Workflow
+from argo.workflows.dsl import Workflow
 
-from argo.workflows.sdk.tasks import *
-from argo.workflows.sdk.templates import *
+from argo.workflows.dsl.tasks import *
+from argo.workflows.dsl.templates import *
 
 
 class DagDiamond(Workflow):
@@ -279,10 +279,10 @@ spec:
 <td valign="top"><p>
 
 ```python
-from argo.workflows.sdk import Workflow
+from argo.workflows.dsl import Workflow
 
-from argo.workflows.sdk.tasks import *
-from argo.workflows.sdk.templates import *
+from argo.workflows.dsl.tasks import *
+from argo.workflows.dsl.templates import *
 
 class ArtifactPassing(Workflow):
 
@@ -513,7 +513,7 @@ The compilation also takes all imports to the front and remove duplicates for co
 
 <br>
 
-For more examples see the [examples](https://github.com/CermakM/argo-python-sdk/tree/master/examples) folder.
+For more examples see the [examples](https://github.com/CermakM/argo-python-dsl/tree/master/examples) folder.
 
 <br>
 
