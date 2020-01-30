@@ -11,7 +11,7 @@ try:
 except ImportError:
     from yaml import Dumper
 
-"""Argo Workflow Python SDK utilities."""
+"""Argo Workflow Python DSL utilities."""
 
 __mark = "___%s" % uuid4()
 

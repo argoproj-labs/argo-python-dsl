@@ -2,7 +2,7 @@ import flexmock
 import pytest
 import requests
 
-from argo.workflows.sdk import Workflow
+from argo.workflows.dsl import Workflow
 
 from ._base import TestCase
 

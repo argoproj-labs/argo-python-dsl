@@ -12,7 +12,7 @@ from setuptools import find_packages
 HERE = Path(__file__).parent
 
 ABOUT = dict()
-exec(Path(HERE, "argo/workflows/sdk", "__about__.py").read_text(), ABOUT)
+exec(Path(HERE, "argo/workflows/dsl", "__about__.py").read_text(), ABOUT)
 
 DEVELOPMENT_STATUS = "2 - Pre-Alpha"
 

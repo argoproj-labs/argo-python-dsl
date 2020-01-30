@@ -1,5 +1,5 @@
-PACKAGE_NAME        = workflows.sdk
-PACKAGE_DESCRIPTION = Python SDK for Argo Workflows
+PACKAGE_NAME        = workflows.dsl
+PACKAGE_DESCRIPTION = Python DSL for Argo Workflows
 
 CURRENT_DIR ?= $(shell pwd)
 
@@ -50,7 +50,7 @@ patch: all
 
 	$(MAKE) changelog
 
-	sed -i "s/__version__ = \(.*\)/__version__ = \"${VERSION}\"/g" argo/workflows/sdk/__about__.py
+	sed -i "s/__version__ = \(.*\)/__version__ = \"${VERSION}\"/g" argo/workflows/dsl/__about__.py
 
 	python setup.py sdist bdist_wheel
 	twine check dist/* || (echo "Twine check did not pass. Aborting."; exit 1)
@@ -66,7 +66,7 @@ release: all
 
 	$(MAKE) changelog
 
-	sed -i "s/__version__ = \(.*\)/__version__ = \"${VERSION}\"/g" argo/workflows/sdk/__about__.py
+	sed -i "s/__version__ = \(.*\)/__version__ = \"${VERSION}\"/g" argo/workflows/dsl/__about__.py
 
 	python setup.py sdist bdist_wheel
 	twine check dist/* || (echo "Twine check did not pass. Aborting."; exit 1)

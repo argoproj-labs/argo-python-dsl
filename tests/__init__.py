@@ -1,1 +1,1 @@
-"""Argo Python SDK test suite."""
+"""Argo Python DSL test suite."""

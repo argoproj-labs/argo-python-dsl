@@ -1,4 +1,4 @@
-"""Argo Workflows Python SDK."""
+"""Argo Workflows Python DSL."""
 
 __all__ = [
     # modules
