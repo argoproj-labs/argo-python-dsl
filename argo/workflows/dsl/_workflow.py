@@ -278,9 +278,7 @@ class Workflow(metaclass=WorkflowMeta):
     @classmethod
     def from_url(cls, url: str, validate: bool = True) -> "Workflow":
         """Create a Workflow from a remote file."""
-        resp = requests.get(
-            "https://raw.githubusercontent.com/argoproj/argo/master/examples/hello-world.yaml"
-        )
+        resp = requests.get(url)
         resp.raise_for_status()
 
         wf: Dict[str, Any] = yaml.safe_load(resp.text)
