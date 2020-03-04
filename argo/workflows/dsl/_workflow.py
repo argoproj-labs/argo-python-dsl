@@ -431,7 +431,7 @@ class Workflow(metaclass=WorkflowMeta):
         )
 
         # return the computed Workflow ID
-        return self.name
+        return created
 
     def to_file(self, fp: Union[Path, str], fmt="yaml", **kwargs):
         """Dumps the Workflow to a file."""

@@ -3,7 +3,7 @@ import pytest
 import requests
 
 from argo.workflows.client import V1alpha1Api
-from argo.workflows.client.models import V1alpha1Arguments, V1alpha1Parameter
+from argo.workflows.client.models import V1alpha1Workflow, V1alpha1Arguments, V1alpha1Parameter
 
 from argo.workflows.dsl import Workflow
 
@@ -87,9 +87,10 @@ class TestWorkflow(TestCase):
         wf.spec.arguments = V1alpha1Arguments(
             parameters=[V1alpha1Parameter(name="param")]
         )
-        workflow_name: str = wf.submit(
+        workflow_result: str = wf.submit(
             client=api, namespace="test", parameters={"param": "test"}
         )
 
-        assert isinstance(workflow_name, str)
-        assert workflow_name == "test"
+        assert isinstance(workflow_result, V1alpha1Workflow)
+        assert isinstance(workflow_result.metadata.name, str)
+        assert workflow_result.metadata.name == "test"
