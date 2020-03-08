@@ -61,7 +61,7 @@ patch: all
 	twine check dist/* || (echo "Twine check did not pass. Aborting."; exit 1)
 
 	git commit -a -m ":wrench: Patch ${VERSION}" --signoff
-	git tag -a "v${VERSION}" -m "Patch ${CLIENT_VERSION}"
+	git tag -a "v${VERSION}" -m "Patch ${VERSION}"
 
 
 .PHONY: release
@@ -78,7 +78,7 @@ release: all
 	twine check dist/* || (echo "Twine check did not pass. Aborting."; exit 1)
 
 	v=${VERSION}; git commit -a -m ":tada: Release $${v:0:3}" --signoff
-	v=${VERSION}; git tag -a "v${CLIENT_VERSION}" -m "Release $${v:0:3}"
+	v=${VERSION}; git tag -a "v${VERSION}" -m "Release $${v:0:3}"
 
 
 validate:
