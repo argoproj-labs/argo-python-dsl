@@ -42,6 +42,11 @@ VERSION    ?= $(shell b="${GIT_BRANCH}"; v="$${b/release-/}.0"; echo "$${v:0:5}"
 PYPI_REPOSITORY ?= https://upload.pypi.org/legacy/
 
 
+.PHONY: all
+all:
+	@echo "Nothing to do."
+
+
 .PHONY: patch
 patch: SHELL:=/bin/bash
 patch: all
@@ -58,6 +63,7 @@ patch: all
 	git commit -a -m ":wrench: Patch ${VERSION}" --signoff
 	git tag -a "v${VERSION}" -m "Patch ${CLIENT_VERSION}"
 
+
 .PHONY: release
 release: SHELL:=/bin/bash
 release: all
@@ -73,6 +79,7 @@ release: all
 
 	v=${VERSION}; git commit -a -m ":tada: Release $${v:0:3}" --signoff
 	v=${VERSION}; git tag -a "v${CLIENT_VERSION}" -m "Release $${v:0:3}"
+
 
 validate:
 	@echo "Validating version '${VERSION}' on branch '{GIT_BRANCH}'"
