@@ -13,7 +13,7 @@ from typing import Type
 from typing import TypeVar
 from typing import Union
 
-from argo.workflows import models
+from argo.workflows.client import models
 
 T = TypeVar("T")
 

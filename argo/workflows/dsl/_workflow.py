@@ -398,7 +398,7 @@ class Workflow(metaclass=WorkflowMeta):
             param = V1alpha1Parameter(name=name, value=value)
             new_parameters.append(param)
 
-        if hasattr(self.spec, "arguments"):
+        if getattr(self.spec, "arguments"):
             for p in getattr(self.spec.arguments, "parameters", []):
                 if p.name in parameters:
                     continue  # overridden
@@ -412,6 +412,8 @@ class Workflow(metaclass=WorkflowMeta):
                 new_parameters.append(p)
 
             self.spec.arguments.parameters = new_parameters
+        elif parameters:
+            raise AttributeError("The Workflow doesn't take any parameters.")
 
         body: Dict[str, Any]
         if not getattr(self, "validated", True):
