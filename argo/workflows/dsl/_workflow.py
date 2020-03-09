@@ -386,10 +386,10 @@ class Workflow(metaclass=WorkflowMeta):
         namespace: str,
         *,
         parameters: Optional[Dict[str, str]] = None,
-    ) -> str:
+    ) -> V1alpha1Workflow:
         """Submit an Argo Workflow to a given namespace.
 
-        :returns: str, Workflow name
+        :returns: V1alpha1Workflow, submitted Workflow
         """
         parameters = parameters or {}
 
@@ -430,7 +430,7 @@ class Workflow(metaclass=WorkflowMeta):
             namespace, body
         )
 
-        # return the computed Workflow ID
+        # return the computed Workflow
         return created
 
     def to_file(self, fp: Union[Path, str], fmt="yaml", **kwargs):

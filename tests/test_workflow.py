@@ -93,4 +93,7 @@ class TestWorkflow(TestCase):
 
         assert isinstance(workflow_result, V1alpha1Workflow)
         assert isinstance(workflow_result.metadata.name, str)
+        assert len(workflow_result.spec.arguments.parameters) == 1
+        assert workflow_result.spec.arguments.parameters[0].name == 'param'
+        assert workflow_result.spec.arguments.parameters[0].value == 'test'
         assert workflow_result.metadata.name == "test"
