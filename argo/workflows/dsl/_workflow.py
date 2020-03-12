@@ -40,6 +40,8 @@ from argo.workflows.client.models import V1alpha1WorkflowSpec
 from argo.workflows.client.models import V1alpha1WorkflowStatus
 from argo.workflows.client.models import V1ObjectMeta
 
+from ._base import Prop
+from ._base import Spec
 from . import _utils
 
 __all__ = ["Workflow"]
@@ -238,19 +240,19 @@ class Workflow(metaclass=WorkflowMeta):
 
     @property
     def model(self) -> Union[V1alpha1Workflow, None]:
-        """Return the Workflow specification.
+        """Return the Workflow model.
 
         :returns: V1alpha1Workflow if compiled, otherwise None
         """
         return self.__compiled_model
 
     @model.setter
-    def model(self, spec: V1alpha1Workflow):
-        """Set Workflow specification."""
-        if not isinstance(spec, self.__model__):
+    def model(self, m: V1alpha1Workflow):
+        """Set Workflow model."""
+        if not isinstance(m, self.__model__):
             raise TypeError(f"Expected type {self.__model__}, got: {type(spec)}")
 
-        self.__compiled_model = spec
+        self.__compiled_model = m
 
     @property
     def name(self) -> Union[str, None]:
@@ -332,14 +334,17 @@ class Workflow(metaclass=WorkflowMeta):
 
     def compile(self) -> V1alpha1Workflow:
         """Compile the Workflow class to V1alpha1Workflow model."""
-        model: V1alpha1Workflow = self.model
-        if model is not None:
-            return model
+        if self.model is not None:
+            return self.model
 
         def _compile(obj: Any):
             if hasattr(obj, "__model__"):
+                if not hasattr(obj, "model"):
+                    # results of compilation (i.e. dicts, lists)
+                    return obj
+
                 if obj.model is not None:
-                    # prevents referenced templates from being compiled again
+                    # prevents compiled templates from being compiled again
                     return obj.model
 
                 args: Dict[str, Any] = {}
@@ -361,6 +366,7 @@ class Workflow(metaclass=WorkflowMeta):
                             param = V1alpha1Parameter(**param)
                         args[underscore(param.name)] = param
 
+                # __call__ sets the `model` attribute when compiled successfully
                 return obj.__get__(self).__call__(**args)
             if isinstance(obj, list):
                 return list(map(_compile, obj))
@@ -371,14 +377,12 @@ class Workflow(metaclass=WorkflowMeta):
 
             return obj
 
-        self.spec: V1alpha1WorkflowSpec = _compile(self.spec)
-
-        model: V1alpha1Workflow = Workflow.__model__(**self.to_dict(omitempty=False))
-        self.model = model
+        self.spec = _compile(self.spec)
+        self.model = Workflow.__model__(**self.to_dict(omitempty=False))
 
         self.__validated = True
 
-        return model
+        return self.model
 
     def submit(
         self,
