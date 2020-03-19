@@ -10,9 +10,9 @@ pytest = "*"
 flexmock = "*"
 
 [packages]
-argo-workflows = "*"
+argo-workflows = ">=3.1.1"
 inflection = "*"
-pyyaml = "*"
+pyyaml = ">=5.3.0"
 
 [requires]
 python_version = "3.6"
