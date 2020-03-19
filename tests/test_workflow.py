@@ -3,9 +3,21 @@ import pytest
 import requests
 
 from argo.workflows.client import V1alpha1Api
-from argo.workflows.client.models import V1alpha1Workflow, V1alpha1Arguments, V1alpha1Parameter
+from argo.workflows.client.models import (
+    V1alpha1Arguments,
+    V1alpha1Parameter,
+    V1alpha1Template,
+    V1alpha1Workflow,
+    V1Container
+)
 
 from argo.workflows.dsl import Workflow
+from argo.workflows.dsl.tasks import (
+    dependencies,
+    parameter,
+    task
+)
+from argo.workflows.dsl.templates import inputs, template
 
 from ._base import TestCase
 
@@ -38,6 +50,46 @@ class TestWorkflow(TestCase):
     """Test Workflow."""
 
     _WORKFLOW_FILE = TestCase.DATA / "workflows" / "hello-world.yaml"
+
+    def test_compile(self) -> None:
+        """Test `Workflow.compile` method."""
+        class TestWorfklowWithParameters(Workflow):
+            name = "test"
+
+            @task
+            @parameter(name="message", value="A")
+            def A(self, message: V1alpha1Parameter) -> V1alpha1Template:
+                return self.echo(message=message)
+
+            @task
+            @parameter(name="message", value="B")
+            @dependencies(["A"])
+            def B(self, message: V1alpha1Parameter) -> V1alpha1Template:
+                return self.echo(message=message)
+
+            @template
+            @inputs.parameter(name="message")
+            def echo(self, message: V1alpha1Parameter) -> V1Container:
+                container = V1Container(
+                    image="alpine:3.7",
+                    name="echo",
+                    command=["echo", "{{inputs.parameters.message}}"],
+                )
+                return container
+
+        # test compile=False
+        wf_not_compiled = TestWorfklowWithParameters(compile=False)
+
+        assert wf_not_compiled.model is None
+
+        # test multiple instances
+        wf_a = TestWorfklowWithParameters()
+        wf_b = TestWorfklowWithParameters()
+
+        assert wf_a == wf_b
+
+        assert isinstance(wf_a, V1alpha1Workflow)
+        assert isinstance(wf_b, V1alpha1Workflow)
 
     def test_from_file(self) -> None:
         """Test `Workflow.from_file` method."""

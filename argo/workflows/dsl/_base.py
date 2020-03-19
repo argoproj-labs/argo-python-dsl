@@ -55,7 +55,8 @@ class SpecProxy(object):
         }
         model: T = spec.__model__(**attr_dict)
 
-        spec.model = model
+        self._spec.model = model
+
         return model
 
 
