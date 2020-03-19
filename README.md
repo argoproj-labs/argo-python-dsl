@@ -1,6 +1,6 @@
-# argo-python-dsl &nbsp; [![Release](https://img.shields.io/github/v/tag/cermakm/argo-python-dsl.svg?sort=semver&label=Release)](https://github.com/CermakM/argo-python-dsl/releases/latest)
+# argo-python-dsl &nbsp; [![Release](https://img.shields.io/github/v/tag/argoproj-labs/argo-python-dsl.svg?sort=semver&label=Release)](https://github.com/argoproj-labs/argo-python-dsl/releases/latest)
 
-[![License](https://img.shields.io/github/license/cermakm/argo-python-dsl)](https://github.com/CermakM/argo-python-dsl/blob/master/LICENSE) &nbsp; [![CI](https://github.com/cermakm/argo-python-dsl/workflows/CI/badge.svg)](https://github.com/cermakm/argo-python-dsl/actions) &nbsp;
+[![License](https://img.shields.io/github/license/argoproj-labs/argo-python-dsl)](https://github.com/argoproj-labs/argo-python-dsl/blob/master/LICENSE) &nbsp; [![CI](https://github.com/argoproj-labs/argo-python-dsl/workflows/CI/badge.svg)](https://github.com/argoproj-labs/argo-python-dsl/actions) &nbsp;
 
 ### Python DSL for [Argo Workflows](https://github.com/argoproj/argo)
 
@@ -10,7 +10,7 @@ If you're new to Argo, we recommend checking out the examples in pure YAML. The 
 
 For a more experienced audience, this DSL grants you the ability to programatically define Argo Workflows in Python which is then translated to the Argo YAML specification.
 
-The DSL makes use of the Argo models defined in the [Argo Python client](https://github.com/CermakM/argo-client-python) repository. Combining the two approaches we are given the whole low-level control over Argo Workflows.
+The DSL makes use of the Argo models defined in the [Argo Python client](https://github.com/argoproj-labs/argo-client-python) repository. Combining the two approaches we are given the whole low-level control over Argo Workflows.
 
 </div>
 
@@ -20,7 +20,7 @@ The DSL makes use of the Argo models defined in the [Argo Python client](https:/
 
 <div style="text-align: justify">
 
-This example demonstrates the simplest functionality. Defining a `Workflow` by subclassing the `@Workflow` class and a single template with the `@template` decorator.
+This example demonstrates the simplest functionality. Defining a `Workflow` by subclassing the `Workflow` class and a single template with the `@template` decorator.
 
 The entrypoint to the workflow is defined as an `entrypoint` class property.
 
@@ -513,14 +513,11 @@ The compilation also takes all imports to the front and remove duplicates for co
 
 <br>
 
-For more examples see the [examples](https://github.com/CermakM/argo-python-dsl/tree/master/examples) folder.
+For more examples see the [examples](https://github.com/argoproj-labs/argo-python-dsl/tree/master/examples) folder.
 
 <br>
 
 ---
 
 Authors:
-- [ Maintainer ] Marek Cermak <macermak@redhat.com>
-- Vaclav Pavlin <vpavlin@redhat.com>
-
-@[AICoE](https://github.com/AICoE), Red Hat
+- [ Maintainer ] Marek Cermak <macermak@redhat.com>, <prace.mcermak@gmail.com>
