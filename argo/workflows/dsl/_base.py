@@ -42,11 +42,18 @@ class SpecProxy(object):
         if self._callable:
             ret: Any = spec.fget(self._obj, *args, **kwargs)
 
-            for attr, swagger_type in spec.__model__.swagger_types.items():
-                t: Any = getattr(models, swagger_type, None)
-                if t == type(ret):
-                    setattr(spec, attr, ret)
-                    break
+            if hasattr(spec.__model__, "swagger_types"):
+                for attr, swagger_type in spec.__model__.swagger_types.items():
+                    t: Any = getattr(models, swagger_type, None)
+                    if t == type(ret):
+                        setattr(spec, attr, ret)
+                        break
+            else:
+                for attr, openapi_type in spec.__model__.openapi_types.items():
+                    t: Any = getattr(models, openapi_type, None)
+                    if t == type(ret):
+                        setattr(spec, attr, ret)
+                        break
 
             spec.__init_model__(ret, *args, **kwargs)
 
