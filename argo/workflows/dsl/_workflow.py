@@ -343,7 +343,7 @@ class Workflow(metaclass=WorkflowMeta):
                     # results of compilation (i.e. dicts, lists)
                     return obj
 
-                if obj.model is not None:
+                if hasattr(obj, "model") and obj.model is not None:
                     # prevents compiled templates from being compiled again
                     return obj.model
 
