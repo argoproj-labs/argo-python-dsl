@@ -17,8 +17,8 @@ __uri__ = "https://github.com/CermakM/argo-python-dsl"
 
 __version__ = "0.1.0-rc"
 
-__author__ = "Marek Cermak"
-__email__ = "macermak@redhat.com"
+__author__ = "Yudi Xue, Marek Cermak"
+__email__ = "binarycrayon@gmail.com, macermak@redhat.com"
 
 __license__ = "Apache Software License"
 __copyright__ = "Copyright 2019 {0}".format(__author__)
