@@ -114,7 +114,7 @@ class closure(Prop, command=["python"]):
         volume_mounts: List[V1VolumeMount] = None,
         working_dir: str = None,
     ):  # noqa: E501
-        super().__init__(**self.__dict__, name="script", source="")
+        super().__init__(**self.__dict__, name="script", source="", image="")
 
         self.image = image
         self.scope = scope
