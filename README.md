@@ -2,8 +2,6 @@
 
 [![License](https://img.shields.io/github/license/argoproj-labs/argo-python-dsl)](https://github.com/argoproj-labs/argo-python-dsl/blob/master/LICENSE) &nbsp; [![CI](https://github.com/argoproj-labs/argo-python-dsl/workflows/CI/badge.svg)](https://github.com/argoproj-labs/argo-python-dsl/actions) &nbsp;
 
-![](https://github.com/argoproj-labs/argo-python-dsl/workflows/CI/badge.svg)
-
 ### Python DSL for [Argo Workflows](https://github.com/argoproj/argo)
 
 <div style="text-align: justify">

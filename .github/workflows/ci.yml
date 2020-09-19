@@ -69,4 +69,5 @@ jobs:
         export PATH=$HOME/.local/bin:/usr/local/bin:$PATH
 
         # run tests
-        bash tests/test-notebooks.sh
+        pytest
+        # bash tests/test-notebooks.sh
