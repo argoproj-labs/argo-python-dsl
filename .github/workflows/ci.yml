@@ -54,7 +54,7 @@ jobs:
 
         # python dependencies
         python -m pip install --user --upgrade pip pipenv
-        pip install --user .
+        pip install --user -r requirements-test.txt
 
     # - name: Lint with flake8instance
     #   run: |
