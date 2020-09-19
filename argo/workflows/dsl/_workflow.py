@@ -66,7 +66,7 @@ class WorkflowMeta(ABCMeta):
         props["kind"] = "Workflow"
         props["api_version"] = "argoproj.io/v1alpha1"
 
-        metadata_dict = dict(name=workflow_name, generate_name=f"{workflow_name}-")
+        metadata_dict = dict(name='', generate_name=f"{workflow_name}-")
         metadata_dict.update(props.get("__metadata__", {}))
 
         # Required fields
