@@ -71,3 +71,26 @@ jobs:
         # run tests
         pytest
         # bash tests/test-notebooks.sh
+    - name: Install Argo CLI
+      run: |
+        curl -sLO https://github.com/argoproj/argo/releases/download/v2.11.1/argo-linux-amd64.gz
+        gunzip argo-linux-amd64.gz
+        chmod +x argo-linux-amd64
+        sudo mv ./argo-linux-amd64 /usr/local/bin/argo
+    - uses: opsgang/ga-setup-minikube@v0.1.1
+      with:
+          minikube-version: 1.11.0
+          k8s-version: 1.18.3
+    - name: Integration tests
+      run: |
+        minikube config set vm-driver docker
+        minikube config set kubernetes-version 1.18.3
+        minikube start
+
+        kubectl create ns argo
+        kubectl create sa default -n argo
+        kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/v2.11.1/manifests/quick-start-minimal.yaml
+        kubectl wait -n argo --for=condition=Ready pods --all --timeout=300s
+
+        chmod +x scripts/integration_tests.sh
+        scripts/integration_tests.sh
