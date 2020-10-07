@@ -10,7 +10,7 @@ If you're new to Argo, we recommend checking out the examples in pure YAML. The 
 
 For a more experienced audience, this DSL grants you the ability to programatically define Argo Workflows in Python which is then translated to the Argo YAML specification.
 
-The DSL makes use of the Argo models defined in the [Argo Python client](https://github.com/argoproj-labs/argo-client-python) repository. Combining the two approaches we are given the whole low-level control over Argo Workflows.
+The DSL makes use of the Argo models defined in the [Argo Python client](https://github.com/argoproj-labs/argo-client-python) repository. Combining the two approaches we are given the whole low-level control over Argo Workflows. In addition, you can check out [Couler](https://github.com/couler-proj/couler) that provides a simplified and unified functional interface for constructing and managing workflows from various workflow engines, including Argo Workflows.
 
 </div>
 
