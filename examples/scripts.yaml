@@ -17,7 +17,7 @@ spec:
         arguments:
           parameters:
           - name: message
-            value: "{{steps.generate.outputs.result}}"
+            value: "{{tasks.generate.outputs.result}}"
         dependencies: [generate]
 
   - name: gen-random-int
