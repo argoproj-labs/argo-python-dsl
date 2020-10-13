@@ -4,13 +4,12 @@ __all__ = [
     # modules
     "task",
     "templates",
-
     # decorators
     "tasks",
     "template",
-
     # main
-    "Workflow"
+    "CronWorkflow",
+    "Workflow",
 ]
 
 # modules
@@ -22,4 +21,5 @@ from .tasks import task
 from .templates import template
 
 # main
+from ._cronworkflow import CronWorkflow
 from ._workflow import Workflow
