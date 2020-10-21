@@ -10,6 +10,7 @@ __all__ = [
     # main
     "CronWorkflow",
     "Workflow",
+    "WorkflowTemplate",
 ]
 
 # modules
@@ -23,3 +24,4 @@ from .templates import template
 # main
 from ._cronworkflow import CronWorkflow
 from ._workflow import Workflow
+from ._workflow_template import WorkflowTemplate

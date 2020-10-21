@@ -10,6 +10,17 @@ do
     echo "Testing $workflow workflow ... done!\n"
 done
 
+echo "WorkflowTemplate Tests ... \n"
+for f in tests/workflow_templates/*.py
+do
+    workflow=$(basename ${f%%.*})
+    echo "Testing $workflow workflow ..."
+    PYTHONPATH=. python $f
+    argo template create -n argo tests/workflow_templates/$workflow.yaml
+    argo submit -n argo --from=wftmpl/$workflow --name $workflow
+    bash scripts/validate_workflow.sh $workflow
+    echo "Testing $workflow workflow ... done!\n"
+done
 
 echo "CronWorkflow Tests ... \n"
 for f in tests/cronworkflows/*.py
