@@ -48,6 +48,7 @@ _LOGGER = logging.getLogger(__name__)
 class WorkflowTemplateMeta(ABCMeta):
 
     __model__ = V1alpha1WorkflowTemplate
+    __kind__ = "WorkflowTemplate"
 
     def __new__(
         cls,
@@ -58,7 +59,7 @@ class WorkflowTemplateMeta(ABCMeta):
     ):
         workflow_name = dasherize(underscore(name))
 
-        props["kind"] = "WorkflowTemplate"
+        props["kind"] = cls.__kind__
         props["api_version"] = "argoproj.io/v1alpha1"
 
         metadata_dict = {"name": workflow_name}
@@ -75,7 +76,7 @@ class WorkflowTemplateMeta(ABCMeta):
         bases = (*bases, cls.__model__)
         klass = super().__new__(cls, name, bases, props)
 
-        if name == "WorkflowTemplate":
+        if name == cls.__kind__:
             # No need to initialize any further
             return klass
 
@@ -226,7 +227,7 @@ class WorkflowTemplate(metaclass=WorkflowTemplateMeta):
 
         :para compile: bool, whether to compile during initialization [True]
         """
-        self.__compiled_model: Union[V1alpha1WorkflowTemplate, None] = None
+        self._compiled_model: Union[V1alpha1WorkflowTemplate, None] = None
         self.__validated = False
 
         if compile:
@@ -242,7 +243,7 @@ class WorkflowTemplate(metaclass=WorkflowTemplateMeta):
 
         :returns: V1alpha1WorkflowTemplate if compiled, otherwise None
         """
-        return self.__compiled_model
+        return self._compiled_model
 
     @model.setter
     def model(self, m: V1alpha1WorkflowTemplate):
@@ -250,7 +251,7 @@ class WorkflowTemplate(metaclass=WorkflowTemplateMeta):
         if not isinstance(m, self.__model__):
             raise TypeError(f"Expected type {self.__model__}, got: {type(m)}")
 
-        self.__compiled_model = m
+        self._compiled_model = m
 
     @property
     def name(self) -> Union[str, None]:
@@ -316,7 +317,7 @@ class WorkflowTemplate(metaclass=WorkflowTemplateMeta):
 
         self = cls(compile=False)
 
-        if isinstance(wf, V1alpha1WorkflowTemplate):
+        if isinstance(wf, cls.__model__):
             self.__dict__.update(
                 api_version=wf.api_version,
                 kind=wf.kind,
@@ -376,7 +377,7 @@ class WorkflowTemplate(metaclass=WorkflowTemplateMeta):
             return obj
 
         self.spec = _compile(self.spec)
-        self.model = WorkflowTemplate.__model__(**self.to_dict(omitempty=False))
+        self.model = self.__model__(**self.to_dict(omitempty=False))
 
         self.__validated = True
 
@@ -409,9 +410,21 @@ class WorkflowTemplate(metaclass=WorkflowTemplateMeta):
 
         :param omitempty: bool, whether to omit empty values
         """
-        result = V1alpha1WorkflowTemplate.to_dict(self)
+        result = self.__model__.to_dict(self)
 
         if omitempty:
             return _utils.omitempty(result)
 
         return result
+
+
+class ClusterWorkflowTemplateMeta(WorkflowTemplateMeta):
+
+    __kind__ = "ClusterWorkflowTemplate"
+    __model__ = V1alpha1ClusterWorkflowTemplate
+
+
+class ClusterWorkflowTemplate(WorkflowTemplate, metaclass=ClusterWorkflowTemplateMeta):
+    """Base class for Workflows."""
+
+    __model__ = V1alpha1ClusterWorkflowTemplate

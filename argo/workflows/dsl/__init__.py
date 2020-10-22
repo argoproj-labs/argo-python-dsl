@@ -8,6 +8,7 @@ __all__ = [
     "tasks",
     "template",
     # main
+    "ClusterWorkflowTemplate",
     "CronWorkflow",
     "Workflow",
     "WorkflowTemplate",
@@ -22,6 +23,7 @@ from .tasks import task
 from .templates import template
 
 # main
+from ._workflow_template import ClusterWorkflowTemplate
 from ._cronworkflow import CronWorkflow
 from ._workflow import Workflow
 from ._workflow_template import WorkflowTemplate
