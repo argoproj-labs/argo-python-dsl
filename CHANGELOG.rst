@@ -2,8 +2,88 @@ Changelog
 =========
 
 
-0.1.0-rc
---------
+0.2.0
+-----
+
+Changes
+~~~~~~~
+- Updated README due to migration to argoproj-labs. [Marek Cermak]
+- Return workflow result on submit. [asavpatel92]
+
+  modified:   argo/workflows/dsl/_workflow.py
+  modified:   tests/test_workflow.py
+
+Fix
+~~~
+- Make sure both, swagger and openapi code works. [Marek Cermak]
+- :pushpin: Lock dependencies. [Marek Cermak]
+
+  Signed-off-by: Marek Cermak <macermak@redhat.com>
+
+  modified:   Pipfile
+  modified:   Pipfile.lock
+- Fixed compilation issue with multiple instances. [Marek Cermak]
+
+  Signed-off-by: Marek Cermak <macermak@redhat.com>
+
+  modified:   argo/workflows/dsl/_base.py
+  modified:   argo/workflows/dsl/_workflow.py
+  modified:   tests/test_workflow.py
+- Updated return type and doc strings, improve test. [asavpatel92]
+
+  modified:   argo/workflows/dsl/_workflow.py
+  modified:   tests/test_workflow.py
+
+Other
+~~~~~
+- [release-0.2.0] use argo-workflows 3.6. [Yudi Xue]
+- Feat: Add (Cluster)WorkflowTemplate DSL (#13) [Pablo Osinaga]
+
+  * feat: Add WorkflowTempate DSL
+
+  * feat: Add ClusterWorkflowTempate DSL
+
+  * fix: update argo workflow client version to 3.5
+- Feat: Add CronWorkflow DSL (#12) [Pablo Osinaga]
+- Ci: add integration tests workflows (#11) [Pablo Osinaga]
+
+  * ci(integration):  add artifacts workflow
+
+  * ci(integration): add script workflow
+
+  * ci(integration): add loop workflow
+
+  * docs: integration tests
+- Ci: add integration tests (#9) [Pablo Osinaga]
+- Use argo workflows v3.5 (#8) [binarycrayon]
+
+  * [argo-workflows-3.5] set argo-workflows 3.5 as dep
+
+  Signed-off-by: Yudi Xue <10211+binarycrayon@users.noreply.github.com>
+
+  * [arge-workflows-v3.5] fix a bug
+
+  - image kwarg for Template should not be None
+
+  Signed-off-by: Yudi Xue <10211+binarycrayon@users.noreply.github.com>
+
+  * [argo-workflows-v3.5] update readme and github worklow
+
+  - update workflow to test python 3.6, 3.7, 3.8
+  - show CI badge
+
+  Signed-off-by: Yudi Xue <10211+binarycrayon@users.noreply.github.com>
+
+  * [argo-workflows-v3.5] only submit wf with generate_name
+
+  - when both 'name' and 'generate_name' present in metadata, name is prefered
+  - change design to use generate_name only
+- Bad model ref (#1) [Ross Crawford-d'Heureuse, Ross
+  Crawford-d'Heureuse]
+
+
+v0.1.0-rc (2020-03-08)
+----------------------
 
 New
 ~~~
@@ -151,6 +231,10 @@ Fix
 
   modified:   argo/workflows/sdk/_base.py
   modified:   argo/workflows/sdk/templates.py
+
+Other
+~~~~~
+- :tada: Release 0.1.0-rc. [Marek Cermak]
 
 
 v0.1.0-dev (2019-12-19)
