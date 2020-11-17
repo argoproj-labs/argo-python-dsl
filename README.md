@@ -14,6 +14,10 @@ The DSL makes use of the Argo models defined in the [Argo Python client](https:/
 
 </div>
 
+## Contributors
+[@binarycrayon](https://github.com/binarycrayon)
+[@pagos](https://github.com/paguos)
+
 ## Getting started
 
 #### Hello World

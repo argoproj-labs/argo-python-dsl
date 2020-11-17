@@ -15,7 +15,7 @@ __title__ = "argo-workflows-dsl"
 __summary__ = "DSL for Argo Workflows"
 __uri__ = "https://github.com/CermakM/argo-python-dsl"
 
-__version__ = "0.1.0-rc"
+__version__ = "0.2.0"
 
 __author__ = "Yudi Xue, Marek Cermak"
 __email__ = "binarycrayon@gmail.com, macermak@redhat.com"
