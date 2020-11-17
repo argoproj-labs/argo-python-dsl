@@ -2,8 +2,18 @@ Changelog
 =========
 
 
-0.2.0
+0.3.0
 -----
+- [master] fix CI. [Yudi Xue]
+- Release 0.2.0 (#14) [Yudi Xue]
+
+  * [release-0.2.0] use argo-workflows 3.6
+
+  * :tada: Release 0.2.0
+
+
+v0.2.0 (2020-11-17)
+-------------------
 
 Changes
 ~~~~~~~
@@ -36,6 +46,7 @@ Fix
 
 Other
 ~~~~~
+- :tada: Release 0.2.0. [Yudi Xue]
 - [release-0.2.0] use argo-workflows 3.6. [Yudi Xue]
 - Feat: Add (Cluster)WorkflowTemplate DSL (#13) [Pablo Osinaga]
 
