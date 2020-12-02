@@ -2,8 +2,17 @@ Changelog
 =========
 
 
-0.3.0
+0.4.0
 -----
+- Update README.md. [Yudi Xue]
+
+  remove contributors since github provides that info
+- :tada: Release 0.3.0 (#15) [Yudi Xue]
+
+
+v0.3.0 (2020-11-17)
+-------------------
+- :tada: Release 0.3.0. [Yudi Xue]
 - [master] fix CI. [Yudi Xue]
 - Release 0.2.0 (#14) [Yudi Xue]
 

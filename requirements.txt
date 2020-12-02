@@ -1,4 +1,4 @@
-argo-workflows==3.6
+argo-workflows==4.0.1
 inflection
 pyyaml
 
