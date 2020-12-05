@@ -26,7 +26,7 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from argo.workflows import client
+from argo.workflows.client import ApiClient, WorkflowServiceApi
 
 from argo.workflows.client.models import V1alpha1Arguments
 from argo.workflows.client.models import V1alpha1Artifact
@@ -39,6 +39,7 @@ from argo.workflows.client.models import V1alpha1Workflow
 from argo.workflows.client.models import V1alpha1WorkflowSpec
 from argo.workflows.client.models import V1alpha1WorkflowStatus
 from argo.workflows.client.models import V1ObjectMeta
+from argo.workflows.client.models import V1alpha1WorkflowCreateRequest
 
 from ._base import Prop
 from ._base import Spec
@@ -308,7 +309,7 @@ class Workflow(metaclass=WorkflowMeta):
         if validate:
             attr = type("Response", (), body)
 
-            wf = client.ApiClient().deserialize(attr, cls.__model__)
+            wf = ApiClient().deserialize(attr, cls.__model__)
         else:
             _LOGGER.warning(
                 "Validation is turned off. This may result in missing or invalid attributes."
@@ -386,7 +387,7 @@ class Workflow(metaclass=WorkflowMeta):
 
     def submit(
         self,
-        client: client.V1alpha1Api,
+        client: ApiClient,
         namespace: str,
         *,
         parameters: Optional[Dict[str, str]] = None,
@@ -427,11 +428,12 @@ class Workflow(metaclass=WorkflowMeta):
             )
             body = camelize(self.to_dict())
         else:
-            body = client.api_client.sanitize_for_serialization(self)
+            body = client.sanitize_for_serialization(self)
 
+        service = WorkflowServiceApi(api_client=client)
         # submit the workflow
-        created: models.V1alpha1Workflow = client.create_namespaced_workflow(
-            namespace, body
+        created: models.V1alpha1Workflow = service.create_workflow(
+            namespace, V1alpha1WorkflowCreateRequest(workflow=body)
         )
 
         # return the computed Workflow
