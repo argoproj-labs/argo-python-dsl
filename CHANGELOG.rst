@@ -4,6 +4,8 @@ Changelog
 
 0.4.0
 -----
+- [release-0.4.0] update readme with more examples. [Yudi Xue]
+- :tada: Release 0.4.0. [Yudi Xue]
 - [release-0.4.0] update tests to be compatibel with argo-sdk. [Yudi
   Xue]
 
