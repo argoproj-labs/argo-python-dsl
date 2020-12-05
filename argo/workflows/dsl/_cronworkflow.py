@@ -19,7 +19,8 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from argo.workflows import client
+from argo.workflows.client import (
+    ApiClient, V1alpha1CreateCronWorkflowRequest, CronWorkflowServiceApi)
 from argo.workflows.client.models import V1alpha1Arguments
 from argo.workflows.client.models import V1alpha1Artifact
 from argo.workflows.client.models import V1alpha1DAGTask
@@ -30,6 +31,7 @@ from argo.workflows.client.models import V1alpha1WorkflowSpec
 from argo.workflows.client.models import V1alpha1CronWorkflow
 from argo.workflows.client.models import V1alpha1CronWorkflowSpec
 from argo.workflows.client.models import V1ObjectMeta
+from argo.workflows.client.models import V1alpha1CreateCronWorkflowRequest
 
 from . import _utils
 
@@ -305,7 +307,7 @@ class CronWorkflow(metaclass=CronWorkflowMeta):
         if validate:
             attr = type("Response", (), body)
 
-            wf = client.ApiClient().deserialize(attr, cls.__model__)
+            wf = ApiClient().deserialize(attr, cls.__model__)
         else:
             _LOGGER.warning(
                 "Validation is turned off. This may result in missing or invalid attributes."
@@ -383,7 +385,7 @@ class CronWorkflow(metaclass=CronWorkflowMeta):
 
     def submit(
         self,
-        client: client.V1alpha1Api,
+        client: ApiClient,
         namespace: str,
         *,
         parameters: Optional[Dict[str, str]] = None,
@@ -399,8 +401,8 @@ class CronWorkflow(metaclass=CronWorkflowMeta):
             param = V1alpha1Parameter(name=name, value=value)
             new_parameters.append(param)
 
-        if getattr(self.spec, "arguments"):
-            for p in getattr(self.spec.arguments, "parameters", []):
+        if getattr(self.spec.workflow_spec, "arguments"):
+            for p in getattr(self.spec.workflow_spec.arguments, "parameters", []):
                 if p.name in parameters:
                     continue  # overridden
                 elif not getattr(p, "value"):
@@ -424,12 +426,13 @@ class CronWorkflow(metaclass=CronWorkflowMeta):
             )
             body = camelize(self.to_dict())
         else:
-            body = client.api_client.sanitize_for_serialization(self)
+            body = client.sanitize_for_serialization(self)
 
+        service = CronWorkflowServiceApi(api_client=client)
         # submit the workflow
-        created: V1alpha1CronWorkflow = client.create_namespaced_workflow(
-            namespace, body
-        )
+        created: V1alpha1CronWorkflow = service.create_cron_workflow(
+            namespace, V1alpha1CreateCronWorkflowRequest(
+                cron_workflow=body))
 
         # return the computed CronWorkflow
         return created
@@ -443,7 +446,8 @@ class CronWorkflow(metaclass=CronWorkflowMeta):
         if fmt == "json":
             Path(fp).write_text(json.dumps(d, **opts))
         else:
-            Path(fp).write_text(yaml.dump(d, Dumper=_utils.BlockDumper, **opts) + "\n")
+            Path(fp).write_text(
+                yaml.dump(d, Dumper=_utils.BlockDumper, **opts) + "\n")
 
     def to_yaml(self, omitempty=True, **kwargs) -> str:
         """Returns the CronWorkflow manifest as a YAML."""

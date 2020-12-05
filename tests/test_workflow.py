@@ -2,7 +2,7 @@ import flexmock
 import pytest
 import requests
 
-from argo.workflows.client import V1alpha1Api
+from argo.workflows.client import ApiClient, WorkflowServiceApi
 from argo.workflows.client.models import (
     V1alpha1Arguments,
     V1alpha1Parameter,
@@ -25,9 +25,9 @@ from ._base import TestCase
 
 
 @pytest.fixture  # type: ignore
-def api() -> V1alpha1Api:
+def api() -> ApiClient:
     """Fake API client."""
-    return V1alpha1Api()
+    return ApiClient()
 
 
 @pytest.fixture  # type: ignore
@@ -116,15 +116,15 @@ class TestWorkflow(TestCase):
         assert wf.kind == "Workflow"
         assert len(wf.spec.templates) == 1
 
-    def test_submit(self, api: V1alpha1Api, wf: Workflow) -> None:
+    def test_submit(self, api: ApiClient, wf: Workflow) -> None:
         """Test `Workflow.submit` method."""
         fake_workflow_name = "test"
-        flexmock(V1alpha1Api).should_receive("create_namespaced_workflow").and_return(
+        flexmock(WorkflowServiceApi).should_receive("create_workflow").and_return(
             fake_workflow_name
         )
 
         # submit w/o parameters
-        workflow_name: str = wf.submit(client=V1alpha1Api(), namespace="test")
+        workflow_name: str = wf.submit(client=ApiClient(), namespace="test")
 
         assert isinstance(workflow_name, str)
         assert workflow_name == "test"

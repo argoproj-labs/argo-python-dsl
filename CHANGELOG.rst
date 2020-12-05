@@ -2,8 +2,28 @@ Changelog
 =========
 
 
-0.3.0
+0.4.0
 -----
+- [release-0.4.0] update readme with more examples. [Yudi Xue]
+- :tada: Release 0.4.0. [Yudi Xue]
+- [release-0.4.0] update tests to be compatibel with argo-sdk. [Yudi
+  Xue]
+
+  - compatible with argo-client-python 4.0.1
+- [release-0.4.0] make argo-python-dsl compatible with latest sdk. [Yudi
+  Xue]
+
+  - align with argo-python-client 4.0.1
+- :tada: Release 0.4.0. [Yudi Xue]
+- Update README.md. [Yudi Xue]
+
+  remove contributors since github provides that info
+- :tada: Release 0.3.0 (#15) [Yudi Xue]
+
+
+v0.3.0 (2020-11-17)
+-------------------
+- :tada: Release 0.3.0. [Yudi Xue]
 - [master] fix CI. [Yudi Xue]
 - Release 0.2.0 (#14) [Yudi Xue]
 

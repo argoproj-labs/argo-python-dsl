@@ -14,7 +14,7 @@ The DSL makes use of the Argo models defined in the [Argo Python client](https:/
 
 </div>
 
-## Getting started
+## Getting Started
 
 #### Hello World
 
@@ -427,7 +427,7 @@ The closure implements the `V1alpha1ScriptTemplate`, which means that you can pa
 
 Also, make sure that you `import` whatever library you are using, the context is not preserved --- `closure` behaves as a staticmethod and is *sandboxed* from the module scope.
 
-#### `scope`s
+#### `scope`
 
 Now, what if we had a function (or a whole script) which is quite big. Wrapping it in a single Python function is not very Pythonic and it gets tedious. This is where we can make use of `scope`s.
 
@@ -509,6 +509,99 @@ spec:
           print(i)
 ```
 
+## Submitting with dsl
+
+Assume we are running `kubectl -n argo port-forward deployment/argo-server 2746:2746`
+
+#### Workflow
+```python
+from argo.workflows.client import (
+    ApiClient,
+    Configuration,
+    WorkflowServiceApi,
+    V1alpha1WorkflowCreateRequest)
+
+from argo.workflows.dsl import Workflow
+from argo.workflows.dsl.tasks import *
+from argo.workflows.dsl.templates import *
+
+
+class DagDiamond(Workflow):
+
+    @task
+    @parameter(name="message", value="A")
+    def A(self, message: V1alpha1Parameter) -> V1alpha1Template:
+        return self.echo(message=message)
+
+    @task
+    @parameter(name="message", value="B")
+    @dependencies(["A"])
+    def B(self, message: V1alpha1Parameter) -> V1alpha1Template:
+        return self.echo(message=message)
+
+    @task
+    @parameter(name="message", value="C")
+    @dependencies(["A"])
+    def C(self, message: V1alpha1Parameter) -> V1alpha1Template:
+        return self.echo(message=message)
+
+    @task
+    @parameter(name="message", value="D")
+    @dependencies(["B", "C"])
+    def D(self, message: V1alpha1Parameter) -> V1alpha1Template:
+        return self.echo(message=message)
+
+    @template
+    @inputs.parameter(name="message")
+    def echo(self, message: V1alpha1Parameter) -> V1Container:
+        container = V1Container(
+            image="alpine:3.7",
+            name="echo",
+            command=["echo", "{{inputs.parameters.message}}"],
+        )
+
+        return container
+
+if __name__ == "__main__":
+    wf = DagDiamond()
+    config = Configuration(host="http://localhost:2746")
+    client = ApiClient(configuration=config)
+    wf.submit(client, 'argo')
+```
+
+#### CronWorkflow
+
+```python
+from argo.workflows.client import Configuration, ApiClient
+from argo.workflows.dsl import template
+from argo.workflows.dsl import CronWorkflow
+from argo.workflows.dsl.templates import V1Container
+
+
+class HelloCron(CronWorkflow):
+
+    entrypoint = "whalesay"
+    schedule = "0 0 1 1 *"
+
+    @template
+    def whalesay(self) -> V1Container:
+        container = V1Container(
+            image="docker/whalesay:latest",
+            name="whalesay",
+            command=["cowsay"],
+            args=["hello world"],
+        )
+        return container
+
+
+if __name__ == "__main__":
+    wf = HelloCron()
+    print(wf)
+    config = Configuration(host="http://localhost:2746")
+    client = ApiClient(configuration=config)
+    wf.submit(client, "argo")
+```
+
 The compilation also takes all imports to the front and remove duplicates for convenience and more natural look so that you don't feel like poking your eyes when you look at the resulting YAML.
 
 <br>
@@ -520,4 +613,5 @@ For more examples see the [examples](https://github.com/argoproj-labs/argo-pytho
 ---
 
 Authors:
-- [ Maintainer ] Marek Cermak <macermak@redhat.com>, <prace.mcermak@gmail.com>
+- [ Maintainer ] Yudi Xue <binarycrayon@gmail.com>
+- [ Past Maintainer ] Marek Cermak <macermak@redhat.com>, <prace.mcermak@gmail.com>

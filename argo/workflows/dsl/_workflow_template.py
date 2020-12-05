@@ -23,7 +23,7 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from argo.workflows import client
+from argo.workflows.client import ApiClient
 
 from argo.workflows.client.models import V1alpha1Arguments
 from argo.workflows.client.models import V1alpha1Artifact
@@ -308,7 +308,7 @@ class WorkflowTemplate(metaclass=WorkflowTemplateMeta):
         if validate:
             attr = type("Response", (), body)
 
-            wf = client.ApiClient().deserialize(attr, cls.__model__)
+            wf = ApiClient().deserialize(attr, cls.__model__)
         else:
             _LOGGER.warning(
                 "Validation is turned off. This may result in missing or invalid attributes."
