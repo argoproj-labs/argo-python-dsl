@@ -2,7 +2,7 @@ import flexmock
 import pytest
 import requests
 
-from argo.workflows.client import V1alpha1Api
+from argo.workflows.client import ApiClient
 from argo.workflows.client.models import (
     V1alpha1CronWorkflow,
     V1alpha1Parameter,
@@ -20,9 +20,9 @@ from ._base import TestCase
 
 
 @pytest.fixture  # type: ignore
-def api() -> V1alpha1Api:
+def api() -> ApiClient:
     """Fake API client."""
-    return V1alpha1Api()
+    return ApiClient()
 
 
 @pytest.fixture  # type: ignore
