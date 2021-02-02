@@ -14,6 +14,12 @@ The DSL makes use of the Argo models defined in the [Argo Python client](https:/
 
 </div>
 
+## Installation
+
+```bash
+pip install argo-workflows-dsl
+```
+
 ## Getting Started
 
 #### Hello World
