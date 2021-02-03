@@ -1,6 +1,8 @@
 argo-workflows==4.0.1
 inflection
 pyyaml
+requests
+python-dateutil
 
 # --- development ---
 # black
