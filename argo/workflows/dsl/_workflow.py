@@ -141,11 +141,13 @@ class WorkflowMeta(ABCMeta):
             templates.insert(0, main_template)
 
         spec_dict: dict = klass.spec
-        spec_dict["entrypoint"] = spec_dict.get("entrypoint", "main")
-        spec_dict["templates"] = templates
         parent_spec_dict: dict = bases[0].spec if isinstance(bases[0].spec, dict) else bases[
             0].spec.to_dict()
         config_spec_dict = ConfigDict(parent_spec_dict)
+
+        spec_dict["entrypoint"] = spec_dict.get("entrypoint",
+                                                parent_spec_dict.get("entrypoint", 'main'))
+        spec_dict["templates"] = templates
         config_spec_dict.merge(spec_dict)
 
         klass.spec: V1alpha1WorkflowSpec = V1alpha1WorkflowSpec(**config_spec_dict)
