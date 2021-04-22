@@ -3,6 +3,7 @@ inflection
 pyyaml
 requests
 python-dateutil
+mergedict
 
 # --- development ---
 # black
